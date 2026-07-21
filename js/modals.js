@@ -562,12 +562,23 @@ window.openReserveDialog = async function(carId) {
             </div>
           </div>
 
-          <div class="rounded-xl border-2 border-red-600/30 bg-red-500/5 p-4 flex gap-3">
-            <i data-lucide="map-pin" class="text-red-600 w-5 h-5 shrink-0 mt-0.5"></i>
-            <div>
-              <div class="font-black text-sm">Visit Our Shop</div>
-              <div class="text-xs text-gray-600 mt-1">Submit your requirements in person at:</div>
-              <div class="font-bold text-red-600 text-xs mt-1">${SHOP_ADDRESS}</div>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1 rounded-xl border border-gray-200 bg-gray-50 p-4 flex gap-3">
+              <i data-lucide="map-pin" class="text-red-600 w-5 h-5 shrink-0 mt-0.5"></i>
+              <div>
+                <div class="font-black text-sm text-gray-900">Visit Our Shop</div>
+                <div class="text-xs text-gray-600 mt-1">Submit your requirements in person at:</div>
+                <div class="font-bold text-red-600 text-xs mt-1">${SHOP_ADDRESS}</div>
+              </div>
+            </div>
+            
+            <div class="flex-1 rounded-xl border-2 border-red-600/30 bg-red-500/5 p-4 flex gap-3">
+              <i data-lucide="headset" class="text-red-600 w-5 h-5 shrink-0 mt-0.5"></i>
+              <div>
+                <div class="font-black text-sm text-red-700">Need Assistance?</div>
+                <div class="text-[11px] text-gray-600 mt-1 leading-tight">For any questions or clarifications, please contact us:</div>
+                <div class="font-bold text-red-600 text-xs mt-1.5">${BUSINESS_PHONE}</div>
+              </div>
             </div>
           </div>
         </div>
