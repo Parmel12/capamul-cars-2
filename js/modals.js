@@ -574,10 +574,17 @@ window.openReserveDialog = async function(carId) {
             
             <div class="flex-1 rounded-xl border-2 border-red-600/30 bg-red-500/5 p-4 flex gap-3">
               <i data-lucide="headset" class="text-red-600 w-5 h-5 shrink-0 mt-0.5"></i>
-              <div>
+              <div class="w-full">
                 <div class="font-black text-sm text-red-700">Need Assistance?</div>
-                <div class="text-[11px] text-gray-600 mt-1 leading-tight">For any questions or clarifications, please contact us:</div>
-                <div class="font-bold text-red-600 text-xs mt-1.5">${BUSINESS_PHONE}</div>
+                <div class="text-[11px] text-gray-600 mt-1 leading-tight mb-2.5">For any questions or clarifications, please contact us:</div>
+                <div class="flex gap-2 w-full">
+                  <a href="tel:${BUSINESS_PHONE}" class="flex-1 flex justify-center items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white rounded py-1.5 px-2 text-[10px] font-bold uppercase tracking-wider transition">
+                    <i data-lucide="phone" class="w-3 h-3"></i> Call
+                  </a>
+                  <a href="${FACEBOOK_CONTACT_URL}" target="_blank" class="flex-1 flex justify-center items-center gap-1.5 bg-[#0866ff] hover:bg-[#0055eb] text-white rounded py-1.5 px-2 text-[10px] font-bold uppercase tracking-wider transition">
+                    <i data-lucide="message-circle" class="w-3 h-3"></i> Message
+                  </a>
+                </div>
               </div>
             </div>
           </div>
