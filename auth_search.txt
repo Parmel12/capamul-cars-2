@@ -1,0 +1,15 @@
+{
+  "name": "replace_file_content",
+  "args": {
+    "AllowMultiple": false,
+    "Description": "Add show password toggle to login page",
+    "EndLine": 43,
+    "Instruction": "Wrap password input in a relative div and add a toggle button with eye icons.",
+    "ReplacementContent": "      <div>\n        <label class=\"block text-xs font-bold uppercase text-white/80 mb-1\">Password</label>\n        <div class=\"relative\">\n          <input type=\"password\" id=\"login-pass\" required class=\"w-full border rounded-lg pl-4 pr-10 py-2 text-sm focus:border-white focus:ring-1 focus:ring-white focus:outline-none bg-white/5 border-white/10 text-white placeholder-white/40\" placeholder=\"••••••••\" />\n          <button type=\"button\" class=\"absolute inset-y-0 right-0 pr-3 flex items-center text-white/50 hover:text-white transition-colors\" onclick=\"const p=document.getElementById('login-pass'); if(p.type==='password'){p.type='text'; document.getElementById('eye-icon').classList.add('hidden'); document.getElementById('eye-off-icon').classList.remove('hidden');}else{p.type='password'; document.getElementById('eye-icon').classList.remove('hidden'); document.getElementById('eye-off-icon').classList.add('hidden');}\">\n            <i data-lucide=\"eye\" id=\"eye-icon\" class=\"h-4 w-4\"></i>\n            <i data-lucide=\"eye-off\" id=\"eye-off-icon\" class=\"h-4 w-4 hidden\"></i>\n          </button>\n        </div>\n      </div>",
+    "StartLine": 40,
+    "TargetContent": "      <div>\n        <label class=\"block text-xs font-bold uppercase text-white/80 mb-1\">Password</label>\n        <input type=\"password\" id=\"login-pass\" required class=\"w-full border rounded-lg px-4 py-2 text-sm focus:border-white focus:ring-1 focus:ring-white focus:outline-none bg-white/5 border-white/10 text-white placeholder-white/40\" placeholder=\"••••••••\" />\n      </div>",
+    "TargetFile": "c:\\Users\\elshi\\Downloads\\Capamul Cars 2.0\\auth.html",
+    "toolAction": "Add show password toggle",
+    "toolSummary": "Edit auth.html"
+  }
+}

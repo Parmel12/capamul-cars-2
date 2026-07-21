@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | CapamulCars</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'sans-serif'] },
+          colors: {
+            primary: '#9f1c1c',
+            background: '#fbfaf8',
+            foreground: '#272d37',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+  
+  <!-- Sidebar Navigation -->
+  <aside class="w-full md:w-64 bg-white border-r border-black/10 shrink-0 flex flex-col justify-between p-6">
+    <div>
+      <div class="mb-8">
+        <a href="index.html" class="font-serif text-xl font-black tracking-tight text-gray-900 leading-tight">
+          CAPAMUL <span class="text-primary">CARS 2.0</span>
+        </a>
+        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">Management Portal</div>
+      </div>
+      
+      <nav class="space-y-1">
+        <button id="tab-dash-btn" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold bg-primary text-white flex items-center gap-2 transition">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+        </button>
+        <button id="tab-inv-btn" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition">
+          <i data-lucide="car" class="w-4 h-4"></i> Inventory
+        </button>
+        <button id="tab-res-btn" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition">
+          <i data-lucide="bookmark-plus" class="w-4 h-4"></i> Reservations
+        </button>
+        <button id="tab-book-btn" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 flex items-center gap-2 transition">
+          <i data-lucide="calendar" class="w-4 h-4"></i> Test Drives
+        </button>
+      </nav>
+    </div>
+    
+    <div class="mt-8 pt-4 border-t border-black/5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="h-9 w-9 rounded-full bg-primary/10 text-primary grid place-items-center font-bold text-sm">A</div>
+        <div>
+          <div class="text-xs font-bold">Admin User</div>
+          <div class="text-[10px] text-gray-400">admin@capamulcars.com</div>
+        </div>
+      </div>
+      <a href="index.html" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 border rounded-lg text-xs font-bold hover:bg-red-50 hover:text-primary transition-colors">
+        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 p-6 md:p-10 max-h-screen overflow-y-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b pb-4 mb-8">
+      <div>
+        <h1 id="page-title" class="text-2xl font-black text-gray-900">Dashboard Overview</h1>
+        <p class="text-xs text-gray-500 mt-1">Real-time mock statistics and operations panel.</p>
+      </div>
+    </div>
+
+    <!-- VIEW 1: DASHBOARD -->
+    <section id="view-dash" class="space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="bg-white border rounded-xl p-6 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-[10px] font-black uppercase text-gray-400 tracking-wider">Total Inventory</div>
+            <div class="text-3xl font-black text-gray-800 mt-1" id="stat-total-cars">4</div>
+          </div>
+          <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center"><i data-lucide="car" class="w-6 h-6"></i></div>
+        </div>
+        <div class="bg-white border rounded-xl p-6 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-[10px] font-black uppercase text-gray-400 tracking-wider">Pending Reservations</div>
+            <div class="text-3xl font-black text-gray-800 mt-1" id="stat-pending-res">1</div>
+          </div>
+          <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center"><i data-lucide="bookmark-plus" class="w-6 h-6"></i></div>
+        </div>
+        <div class="bg-white border rounded-xl p-6 shadow-sm flex items-center justify-between">
+          <div>
+            <div class="text-[10px] font-black uppercase text-gray-400 tracking-wider">Active Bookings</div>
+            <div class="text-3xl font-black text-gray-800 mt-1" id="stat-active-book">1</div>
+          </div>
+          <div class="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center"><i data-lucide="calendar" class="w-6 h-6"></i></div>
+        </div>
+      </div>
+      
+      <div class="bg-white border rounded-xl p-6 shadow-sm">
+        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="activity" class="w-4 h-4 text-primary"></i> Recent Operations Log</h3>
+        <div class="divide-y text-xs text-gray-600" id="activity-log">
+          <div class="py-3 flex justify-between"><span>New test drive booked for <strong>2023 Honda Civic</strong> by Maria Dela Cruz</span><span class="text-gray-400">Just now</span></div>
+          <div class="py-3 flex justify-between"><span>Reservation request received for <strong>2020 Mitsubishi Montero</strong></span><span class="text-gray-400">2 hours ago</span></div>
+          <div class="py-3 flex justify-between"><span>System initialized in standalone static layout</span><span class="text-gray-400">1 day ago</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: INVENTORY -->
+    <section id="view-inv" class="hidden space-y-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-bold text-gray-800">Car Listings</h2>
+        <button onclick="addMockCar()" class="bg-primary hover:opacity-90 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Vehicle
+        </button>
+      </div>
+      
+      <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b text-gray-500 uppercase tracking-wider text-[10px] font-black">
+              <th class="p-4">Car details</th>
+              <th class="p-4">Year</th>
+              <th class="p-4">SRP Price</th>
+              <th class="p-4">Down Payment</th>
+              <th class="p-4">Status</th>
+              <th class="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-table-body" class="divide-y">
+            <!-- Injected via script -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 3: RESERVATIONS -->
+    <section id="view-res" class="hidden space-y-6">
+      <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b text-gray-500 uppercase tracking-wider text-[10px] font-black">
+              <th class="p-4">Customer</th>
+              <th class="p-4">Vehicle</th>
+              <th class="p-4">Deposit</th>
+              <th class="p-4">Date</th>
+              <th class="p-4">Status</th>
+              <th class="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-table-body" class="divide-y">
+            <!-- Injected via script -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 4: TEST DRIVES -->
+    <section id="view-book" class="hidden space-y-6">
+      <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b text-gray-500 uppercase tracking-wider text-[10px] font-black">
+              <th class="p-4">Customer</th>
+              <th class="p-4">Vehicle</th>
+              <th class="p-4">Preferred Slot</th>
+              <th class="p-4">Contact</th>
+              <th class="p-4">Status</th>
+              <th class="p-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-table-body" class="divide-y">
+            <!-- Injected via script -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>lucide.createIcons();</script>
+  <script src="js/data.js"></script>
+  <script src="js/modals.js"></script>
+
+  <!-- Dashboard Controller Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Mock States
+      let cars = [...api.getAllCars()];
+      let reservations = [
+        { id: 'res-1', customer: 'Juan Dela Cruz', email: 'juan@email.com', phone: '09123456789', car: '2020 Mitsubishi Montero Sport GT', amount: 10000, date: '2026-07-11', status: 'Pending' }
+      ];
+      let bookings = [
+        { id: 'bk-1', customer: 'Maria Santos', email: 'maria@email.com', phone: '09987654321', car: '2022 Toyota Fortuner G', date: '2026-07-15', time: '10:00 AM', status: 'Confirmed' }
+      ];
+
+      // Tab switcher elements
+      const tabs = {
+        dash: { btn: document.getElementById('tab-dash-btn'), view: document.getElementById('view-dash'), title: 'Dashboard Overview' },
+        inv: { btn: document.getElementById('tab-inv-btn'), view: document.getElementById('view-inv'), title: 'Inventory Management' },
+        res: { btn: document.getElementById('tab-res-btn'), view: document.getElementById('view-res'), title: 'Reservations Requests' },
+        book: { btn: document.getElementById('tab-book-btn'), view: document.getElementById('view-book'), title: 'Test Drive Bookings' }
+      };
+
+      const pageTitle = document.getElementById('page-title');
+
+      function switchTab(activeKey) {
+        Object.keys(tabs).forEach(key => {
+          const tab = tabs[key];
+          if (key === activeKey) {
+            tab.btn.classList.add('bg-primary', 'text-white');
+            tab.btn.classList.remove('text-gray-600', 'hover:bg-gray-50');
+            tab.view.classList.remove('hidden');
+            pageTitle.innerText = tab.title;
+          } else {
+            tab.btn.classList.remove('bg-primary', 'text-white');
+            tab.btn.classList.add('text-gray-600', 'hover:bg-gray-50');
+            tab.view.classList.add('hidden');
+          }
+        });
+        lucide.createIcons();
+      }
+
+      tabs.dash.btn.addEventListener('click', () => switchTab('dash'));
+      tabs.inv.btn.addEventListener('click', () => { switchTab('inv'); renderInventory(); });
+      tabs.res.btn.addEventListener('click', () => { switchTab('res'); renderReservations(); });
+      tabs.book.btn.addEventListener('click', () => { switchTab('book'); renderBookings(); });
+
+      // Core Renderers
+      function updateStats() {
+        document.getElementById('stat-total-cars').innerText = cars.length;
+        document.getElementById('stat-pending-res').innerText = reservations.filter(r => r.status === 'Pending').length;
+        document.getElementById('stat-active-book').innerText = bookings.filter(b => b.status === 'Confirmed').length;
+      }
+
+      function logActivity(text) {
+        const logBox = document.getElementById('activity-log');
+        const now = new Date().toLocaleTimeString();
+        logBox.innerHTML = `<div class="py-3 flex justify-between"><span>${text}</span><span class="text-gray-400">${now}</span></div>` + logBox.innerHTML;
+      }
+
+      // Render Inventory Table
+      window.renderInventory = function() {
+        const tbody = document.getElementById('inventory-table-body');
+        tbody.innerHTML = cars.map(car => {
+          const dp = car.dp && car.dp > 0 ? car.dp : computeDp(car.price);
+          return `
+            <tr class="hover:bg-gray-50/50">
+              <td class="p-4 font-bold text-gray-900">${car.name}</td>
+              <td class="p-4 text-gray-500">${car.year}</td>
+              <td class="p-4 font-semibold text-gray-800">${formatPhp(car.price)}</td>
+              <td class="p-4 text-gray-500">${formatPhp(dp)}</td>
+              <td class="p-4">
+                <span class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                  car.status.toLowerCase() === 'available' ? 'bg-green-100 text-green-800' : car.status.toLowerCase() === 'reserved' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                }">${car.status}</span>
+              </td>
+              <td class="p-4 text-right space-x-1.5">
+                <button onclick="toggleCarStatus('${car.id}')" class="text-blue-600 hover:text-blue-800 font-semibold" title="Toggle Status">Toggle</button>
+                <button onclick="deleteCar('${car.id}')" class="text-red-600 hover:text-red-800 font-semibold">Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      };
+
+      // Toggle car status available/reserved
+      window.toggleCarStatus = function(carId) {
+        const car = cars.find(c => c.id === carId);
+        if (car) {
+          car.status = car.status === 'Available' ? 'Reserved' : 'Available';
+          logActivity(`Car <strong>${car.name}</strong> status changed to ${car.status}`);
+          renderInventory();
+          updateStats();
+        }
+      };
+
+      // Delete car
+      window.deleteCar = function(carId) {
+        if(confirm("Are you sure you want to delete this car?")) {
+          const car = cars.find(c => c.id === carId);
+          cars = cars.filter(c => c.id !== carId);
+          logActivity(`Car <strong>${car ? car.name : carId}</strong> deleted from inventory`);
+          renderInventory();
+          updateStats();
+        }
+      };
+
+      // Add Mock Car
+      window.addMockCar = function() {
+        const name = prompt("Enter car name:", "2024 Toyota Vios XLE");
+        if (!name) return;
+        const make = prompt("Enter make:", "Toyota");
+        const price = Number(prompt("Enter SRP price (₱):", "850000"));
+        if (isNaN(price) || price <= 0) return;
+
+        const newCar = {
+          id: String(cars.length + 1),
+          name: name,
+          make: make,
+          model: 'Vios',
+          year: 2024,
+          price: price,
+          images: ['https://images.unsplash.com/photo-1549399542-7e3f8b79c341?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+          status: 'Available',
+          transmission: 'CVT',
+          fuel_type: 'Gasoline',
+          mileage: 5000,
+          location: 'Barobo'
+        };
+
+        cars.push(newCar);
+        logActivity(`New car <strong>${name}</strong> added to inventory`);
+        renderInventory();
+        updateStats();
+      };
+
+      // Render Reservations
+      window.renderReservations = function() {
+        const tbody = document.getElementById('reservations-table-body');
+        tbody.innerHTML = reservations.map(r => `
+          <tr class="hover:bg-gray-50/50">
+            <td class="p-4">
+              <div class="font-bold text-gray-800">${r.customer}</div>
+              <div class="text-[10px] text-gray-400">${r.phone} • ${r.email}</div>
+            </td>
+            <td class="p-4 font-semibold text-gray-700">${r.car}</td>
+            <td class="p-4 font-bold text-red-600">${formatPhp(r.amount)}</td>
+            <td class="p-4 text-gray-500">${r.date}</td>
+            <td class="p-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                r.status === 'Pending' ? 'bg-amber-100 text-amber-800' : r.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }">${r.status}</span>
+            </td>
+            <td class="p-4 text-right space-x-1.5">
+              ${r.status === 'Pending' ? `
+                <button onclick="approveReservation('${r.id}')" class="text-green-600 hover:text-green-800 font-semibold">Approve</button>
+                <button onclick="rejectReservation('${r.id}')" class="text-red-600 hover:text-red-800 font-semibold">Reject</button>
+              ` : '—'}
+            </td>
+          </tr>
+        `).join('');
+      };
+
+      window.approveReservation = function(resId) {
+        const res = reservations.find(r => r.id === resId);
+        if (res) {
+          res.status = 'Approved';
+          logActivity(`Reservation for <strong>${res.car}</strong> by ${res.customer} was APPROVED`);
+          renderReservations();
+          updateStats();
+        }
+      };
+
+      window.rejectReservation = function(resId) {
+        const res = reservations.find(r => r.id === resId);
+        if (res) {
+          res.status = 'Rejected';
+          logActivity(`Reservation for <strong>${res.car}</strong> by ${res.customer} was REJECTED`);
+          renderReservations();
+          updateStats();
+        }
+      };
+
+      // Render Bookings
+      window.renderBookings = function() {
+        const tbody = document.getElementById('bookings-table-body');
+        tbody.innerHTML = bookings.map(b => `
+          <tr class="hover:bg-gray-50/50">
+            <td class="p-4 font-bold text-gray-800">${b.customer}</td>
+            <td class="p-4 font-semibold text-gray-700">${b.car}</td>
+            <td class="p-4">
+              <div class="font-bold text-gray-800">${b.date}</div>
+              <div class="text-[10px] text-gray-400">${b.time}</div>
+            </td>
+            <td class="p-4 text-gray-500">${b.phone}</td>
+            <td class="p-4">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                b.status === 'Confirmed' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }">${b.status}</span>
+            </td>
+            <td class="p-4 text-right">
+              ${b.status === 'Confirmed' ? `
+                <button onclick="cancelBooking('${b.id}')" class="text-red-600 hover:text-red-800 font-semibold">Cancel Booking</button>
+              ` : '—'}
+            </td>
+          </tr>
+        `).join('');
+      };
+
+      window.cancelBooking = function(bkId) {
+        const bk = bookings.find(b => b.id === bkId);
+        if (bk) {
+          bk.status = 'Cancelled';
+          logActivity(`Test drive for <strong>${bk.car}</strong> by ${bk.customer} was CANCELLED`);
+          renderBookings();
+          updateStats();
+        }
+      };
+
+      // Set initial overview stats
+      updateStats();
+    });
+  </script>
+</body>
+</html>

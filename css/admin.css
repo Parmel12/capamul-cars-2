@@ -1,0 +1,40 @@
+/* admin.css */
+
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
+.nav-btn {
+  position: relative;
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+}
+
+.nav-btn:hover {
+  transform: translateX(4px);
+}
+
+.nav-btn.active {
+  background: linear-gradient(90deg, rgba(159, 28, 28, 0.08) 0%, transparent 100%);
+  color: #9f1c1c !important;
+  font-weight: 700;
+}
+
+.nav-btn.active i {
+  color: #9f1c1c;
+}
+
+.nav-btn.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 15%;
+  height: 70%;
+  width: 4px;
+  background-color: #9f1c1c;
+  border-radius: 0 4px 4px 0;
+}

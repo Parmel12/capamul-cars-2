@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us | CapamulCars</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'sans-serif'] },
+          colors: {
+            primary: '#9f1c1c',
+            background: '#fbfaf8',
+            foreground: '#272d37',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto h-20 px-4 sm:px-6 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center min-w-0">
+        <div class="leading-tight">
+          <div class="font-black tracking-tight text-base sm:text-lg lg:text-xl text-[#272d37]">
+            CAPAMUL <span class="text-primary font-bold">CARS 2.0</span>
+          </div>
+          <div class="text-[10px] italic text-primary/80 font-medium">
+            All in <span class="font-bold not-italic">BEST</span> Condition
+          </div>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center justify-center gap-2">
+        <a href="index.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Home</a>
+        <a href="cars.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Inventory</a>
+        <a href="financing.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Financing</a>
+        <button type="button" class="test-drive-nav-btn px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200 inline-flex items-center gap-1.5">
+          Book Test Drive
+        </button>
+        <a href="reviews.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Reviews</a>
+        <a href="about.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-primary border-b-2 border-primary transition-all duration-200">About Us</a>
+        <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Contact Us</a>
+      </nav>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="tel:09686995654" class="hidden sm:inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide shadow-sm hover:opacity-90">
+          <i data-lucide="phone" class="h-3.5 w-3.5"></i> Call Us
+        </a>
+        <a href="auth.html" class="hidden lg:grid h-9 w-9 place-items-center rounded-full border border-primary/40 text-primary hover:bg-primary hover:text-white transition" title="Staff Login">
+          <i data-lucide="user-round" class="h-4 w-4"></i>
+        </a>
+        <button type="button" id="mobile-menu-btn" class="lg:hidden h-10 w-10 grid place-items-center rounded-md hover:bg-black/5">
+          <i data-lucide="menu" class="h-6 w-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden">
+      <div class="fixed inset-0 top-20 bg-black/40 z-30"></div>
+      <nav class="fixed top-20 right-0 z-40 w-72 max-w-[85vw] h-[calc(100vh-5rem)] bg-white border-l border-black/10 shadow-xl flex flex-col p-3 gap-1">
+        <a href="index.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Home</a>
+        <a href="cars.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Inventory</a>
+        <a href="financing.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Financing</a>
+        <button type="button" class="test-drive-nav-btn px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors text-left inline-flex items-center gap-2">
+          Book Test Drive
+        </button>
+        <a href="reviews.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Reviews</a>
+        <a href="about.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-primary bg-primary/5 rounded-lg">About Us</a>
+        <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Contact Us</a>
+        
+        <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">
+          <a href="tel:09686995654" class="flex items-center justify-center gap-2 bg-primary text-white px-4 py-3 rounded-lg text-[13px] font-bold uppercase tracking-wider transition-opacity hover:opacity-90">
+            <i data-lucide="phone" class="h-4 w-4"></i> Call Us
+          </a>
+          <a href="auth.html" class="flex items-center justify-center gap-2 border border-primary/20 text-primary px-4 py-3 rounded-lg text-[13px] font-bold uppercase tracking-wider hover:bg-primary/5 transition-colors">
+            <i data-lucide="user-round" class="h-4 w-4"></i> Staff Login
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="bg-white text-gray-900">
+    <!-- Hero Section -->
+    <section class="relative py-16 md:py-24 px-6 overflow-hidden">
+      <div class="max-w-5xl mx-auto flex flex-col items-center text-center">
+        <h1 id="about-headline" class="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tighter leading-[0.9] whitespace-pre-wrap text-[#272d37]"></h1>
+      </div>
+    </section>
+
+    <!-- Our Story -->
+    <section class="bg-white text-gray-900 py-20 px-6">
+      <div class="max-w-5xl mx-auto flex flex-col md:flex-row gap-12 items-center">
+        <!-- Text Content -->
+        <div class="md:w-1/2">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-8 h-[2px] bg-primary"></div>
+            <span class="text-primary font-bold text-[10px] tracking-[0.2em] uppercase">OUR STORY</span>
+          </div>
+          <h2 id="about-story-head" class="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-[1.1] mb-6"></h2>
+          <div id="about-story-text" class="text-gray-600 text-sm md:text-base leading-relaxed font-light space-y-4 whitespace-pre-wrap"></div>
+        </div>
+
+        <!-- Image Content -->
+        <div class="md:w-1/2 relative mt-8 md:mt-0">
+          <div class="aspect-[4/3] overflow-hidden bg-gray-100 shadow-sm border border-black/5">
+            <img id="about-story-img" src="https://placehold.co/800x600/eee/999?text=Car+Lot+Image" alt="Our Story" class="w-full h-full object-cover" />
+          </div>
+          <!-- Yellow Badge -->
+          <div class="absolute -bottom-6 -right-2 sm:-right-6 bg-amber-400 p-4 sm:p-6 shadow-xl border-4 border-white text-center min-w-[140px] sm:min-w-[160px]">
+            <div id="about-story-badge" class="font-black text-lg sm:text-2xl text-gray-900 whitespace-pre-line leading-tight tracking-tight uppercase"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Banner -->
+    <section class="bg-primary py-12 px-6 border-b-4 border-red-800">
+      <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-white/20 text-center text-white">
+        <div class="px-4">
+          <div id="about-stat1" class="text-3xl md:text-5xl font-black mb-1">1000+</div>
+          <div id="about-stat1-label" class="text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">CARS SOLD</div>
+        </div>
+        <div class="px-4">
+          <div id="about-stat2" class="text-3xl md:text-5xl font-black mb-1">2+</div>
+          <div id="about-stat2-label" class="text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">YEARS IN BUSINESS</div>
+        </div>
+        <div class="px-4">
+          <div id="about-stat3" class="text-3xl md:text-5xl font-black mb-1">99%</div>
+          <div id="about-stat3-label" class="text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">HAPPY CLIENTS</div>
+        </div>
+        <div class="px-4">
+          <div id="about-stat4" class="text-3xl md:text-5xl font-black mb-1">100%</div>
+          <div id="about-stat4-label" class="text-[10px] font-bold tracking-[0.2em] text-white/80 uppercase">TRANSPARENT DEALS</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Awards Section (Award 1) -->
+    <section class="py-20 px-6 bg-white">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-6 h-[2px] bg-amber-500"></div>
+          <span class="text-amber-500 font-bold text-[10px] tracking-[0.2em] uppercase">RECOGNITION & AWARDS</span>
+        </div>
+        <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none mb-12 text-gray-900">
+          AWARD-WINNING<br/><span class="text-primary">DEALERSHIP.</span>
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="aspect-[4/3] bg-gray-100 overflow-hidden group shadow-2xl">
+            <img id="about-award1" src="https://placehold.co/800x600/eee/999?text=Award+1" alt="Award 1" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          </div>
+          <div class="aspect-[4/3] bg-gray-100 overflow-hidden group shadow-2xl">
+            <img id="about-award2" src="https://placehold.co/800x600/eee/999?text=Award+2" alt="Award 2" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CEO Section -->
+    <section class="py-24 px-6 bg-white">
+      <div class="max-w-5xl mx-auto">
+        <!-- Top Header -->
+        <div class="mb-16">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-8 h-[2px] bg-primary"></div>
+            <span class="text-primary font-bold text-[10px] tracking-[0.2em] uppercase">THE PERSON BEHIND CAPAMUL CARS</span>
+          </div>
+          <h2 class="text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tighter text-gray-900">
+            MEET THE CEO.
+          </h2>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-stretch gap-12 lg:gap-20">
+          <!-- Left: Image -->
+          <div class="w-full md:w-[45%]">
+            <div class="relative pb-6">
+              <!-- Image -->
+              <div class="aspect-[3/4] bg-gray-100 overflow-hidden shadow-xl">
+                <img id="about-ceo-img" src="https://placehold.co/600x800/eee/999?text=CEO" alt="CEO" class="w-full h-full object-cover" />
+              </div>
+              
+              <!-- Yellow Line (Aligned with bottom edge of image) -->
+              <div class="absolute bottom-6 left-[140px] right-0 h-1.5 bg-amber-400"></div>
+              
+              <!-- Red Badge (Hanging slightly below image) -->
+              <div class="absolute bottom-0 left-0 bg-[#e1251b] pt-5 pb-4 px-4 text-center text-white border-4 border-white min-w-[140px] shadow-lg flex flex-col items-center justify-center">
+                <div class="font-black text-lg leading-none tracking-tighter mb-2 uppercase">Capamulcar</div>
+                <div class="text-[10px] font-bold tracking-[0.2em] uppercase mt-1">Founder</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Text -->
+          <div class="w-full md:w-[55%] pt-8 md:pt-12">
+            <h3 id="about-ceo-name" class="text-4xl md:text-5xl font-black uppercase tracking-tighter text-gray-900 mb-2"></h3>
+            <h4 id="about-ceo-title" class="text-xs font-bold text-primary uppercase tracking-[0.2em] mb-8"></h4>
+            <div class="w-12 h-1 bg-amber-400 mb-8"></div>
+            
+            <div id="about-ceo-bio" class="text-gray-600 text-sm md:text-base leading-relaxed font-light whitespace-pre-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+  </main>
+
+    <footer class="bg-[#f8f9fa] border-t border-gray-200 py-12 mt-10">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 items-start">
+      
+      <!-- Column 1: Logo & Socials -->
+      <div class="flex flex-col items-center sm:items-start text-center sm:text-left gap-4">
+        <!-- Logo -->
+        <a href="index.html" class="flex flex-col items-center sm:items-start min-w-0">
+          <div class="font-black tracking-tight text-3xl text-[#272d37]">
+            CAPAMUL <span class="text-primary font-bold">CARS 2.0</span>
+          </div>
+          <div class="text-xs italic text-primary font-medium mt-1">
+            All in <span class="font-bold not-italic">BEST</span> Condition
+          </div>
+        </a>
+        <div class="text-gray-400 text-xs mt-2">
+          &copy; <script>document.write(new Date().getFullYear())</script> CapamulCars 2.0. All rights reserved.
+        </div>
+        <!-- Socials -->
+        <div class="flex items-center gap-4 mt-2">
+          <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="text-gray-900 hover:text-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-facebook" viewBox="0 0 16 16">
+              <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Column 3: Contact Info -->
+      <div class="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 text-sm text-gray-700">
+        <h3 class="text-gray-900 font-bold text-base mb-2 uppercase tracking-wider">Contact Us</h3>
+        <div class="flex items-start gap-3">
+          <i data-lucide="map-pin" class="h-5 w-5 mt-0.5 text-gray-500 shrink-0"></i>
+          <span>Purok 2, Dapdap Barobo Surigao Del Sur</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="mail" class="h-5 w-5 text-gray-500 shrink-0"></i>
+          <a href="mailto:capamulcar2@gmail.com" class="hover:text-primary transition-colors">capamulcar2@gmail.com</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="phone" class="h-5 w-5 text-gray-500 shrink-0"></i>
+          <a href="tel:09686995654" class="hover:text-primary transition-colors">09686995654</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="clock" class="h-5 w-5 text-gray-500 shrink-0"></i>
+          <span>Open: 8:00 am - 7:00 pm</span>
+        </div>
+      </div>
+
+      <!-- Column 4: Map -->
+      <div class="w-full h-48 sm:h-56 lg:h-[200px] rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.636145245386!2d126.1347448!3d8.5346596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32fdf1ff7ea05d37%3A0xedc36f9ff6a1ed58!2sCAPAMUL%20GARAGE!5e0!3m2!1sen!2sph!4v1783770400450!5m2!1sen!2sph" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+  <script src="js/data.js"></script>
+  <script src="js/modals.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window.api && window.api.getCMSData) {
+        const data = await window.api.getCMSData();
+        if (data && data.about) {
+          if (data.about.headline) { const el = document.getElementById('about-headline'); if (el) el.innerHTML = data.about.headline.replace(/\n/g, '<br/>'); }
+          if (data.about.sub) { const el = document.getElementById('about-sub'); if (el) el.textContent = data.about.sub; }
+          if (data.about.core) { const el = document.getElementById('about-core'); if (el) el.textContent = data.about.core; }
+          if (data.about.stat1) { const el = document.getElementById('about-stat1'); if (el) el.textContent = data.about.stat1; }
+          if (data.about.stat2) { const el = document.getElementById('about-stat2'); if (el) el.textContent = data.about.stat2; }
+          if (data.about.stat3) { const el = document.getElementById('about-stat3'); if (el) el.textContent = data.about.stat3; }
+          if (data.about.stat4) { const el = document.getElementById('about-stat4'); if (el) el.textContent = data.about.stat4; }
+          
+          if (data.about.stat1Label) { const el = document.getElementById('about-stat1-label'); if (el) el.textContent = data.about.stat1Label; }
+          if (data.about.stat2Label) { const el = document.getElementById('about-stat2-label'); if (el) el.textContent = data.about.stat2Label; }
+          if (data.about.stat3Label) { const el = document.getElementById('about-stat3-label'); if (el) el.textContent = data.about.stat3Label; }
+          if (data.about.stat4Label) { const el = document.getElementById('about-stat4-label'); if (el) el.textContent = data.about.stat4Label; }
+
+          if (data.about.award1) { const el = document.getElementById('about-award1'); if (el) el.src = data.about.award1; }
+          if (data.about.award2) { const el = document.getElementById('about-award2'); if (el) el.src = data.about.award2; }
+          
+          if (data.about.storyHead) { const el = document.getElementById('about-story-head'); if (el) el.innerHTML = data.about.storyHead.replace(/\n/g, '<br/>'); }
+          if (data.about.storyText) { const el = document.getElementById('about-story-text'); if (el) el.textContent = data.about.storyText; }
+          if (data.about.storyBadge) { const el = document.getElementById('about-story-badge'); if (el) el.innerHTML = data.about.storyBadge.replace(/\n/g, '<br/>'); }
+          if (data.about.storyImg) { const el = document.getElementById('about-story-img'); if (el) el.src = data.about.storyImg; }
+
+          if (data.about.ceoName) { const el = document.getElementById('about-ceo-name'); if (el) el.textContent = data.about.ceoName; }
+          if (data.about.ceoTitle) { const el = document.getElementById('about-ceo-title'); if (el) el.textContent = data.about.ceoTitle; }
+          if (data.about.ceoBio) { const el = document.getElementById('about-ceo-bio'); if (el) el.textContent = data.about.ceoBio; }
+          if (data.about.ceoImg) { const el = document.getElementById('about-ceo-img'); if (el) el.src = data.about.ceoImg; }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
+

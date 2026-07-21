@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financing Options | CapamulCars</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'sans-serif'] },
+          colors: {
+            primary: '#9f1c1c',
+            background: '#fbfaf8',
+            foreground: '#272d37',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto h-20 px-4 sm:px-6 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center min-w-0">
+        <div class="leading-tight">
+          <div class="font-black tracking-tight text-base sm:text-lg lg:text-xl text-[#272d37]">
+            CAPAMUL <span class="text-primary font-bold">CARS 2.0</span>
+          </div>
+          <div class="text-[10px] italic text-primary/80 font-medium">
+            All in <span class="font-bold not-italic">BEST</span> Condition
+          </div>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center justify-center gap-2">
+        <a href="index.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Home</a>
+        <a href="cars.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Inventory</a>
+        <a href="financing.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-primary border-b-2 border-primary transition-all duration-200">Financing</a>
+        <button type="button" class="test-drive-nav-btn px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200 inline-flex items-center gap-1.5">
+          Book Test Drive
+        </button>
+        <a href="reviews.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Reviews</a>
+        <a href="about.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">About Us</a>
+        <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Contact Us</a>
+      </nav>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="tel:09686995654" class="hidden sm:inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide shadow-sm hover:opacity-90">
+          <i data-lucide="phone" class="h-3.5 w-3.5"></i> Call Us
+        </a>
+        <a href="auth.html" class="hidden lg:grid h-9 w-9 place-items-center rounded-full border border-primary/40 text-primary hover:bg-primary hover:text-white transition" title="Staff Login">
+          <i data-lucide="user-round" class="h-4 w-4"></i>
+        </a>
+        <button type="button" id="mobile-menu-btn" class="lg:hidden h-10 w-10 grid place-items-center rounded-md hover:bg-black/5">
+          <i data-lucide="menu" class="h-6 w-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden">
+      <div class="fixed inset-0 top-20 bg-black/40 z-30"></div>
+      <nav class="fixed top-20 right-0 z-40 w-72 max-w-[85vw] h-[calc(100vh-5rem)] bg-white border-l border-black/10 shadow-xl flex flex-col p-3 gap-1">
+        <a href="index.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Home</a>
+        <a href="cars.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Inventory</a>
+        <a href="financing.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-primary bg-primary/5 rounded-lg">Financing</a>
+        <button type="button" class="test-drive-nav-btn px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors text-left inline-flex items-center gap-2">
+          Book Test Drive
+        </button>
+        <a href="reviews.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Reviews</a>
+        <a href="about.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">About Us</a>
+        <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Contact Us</a>
+        
+        <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">
+          <a href="tel:09686995654" class="flex items-center justify-center gap-2 bg-primary text-white px-4 py-3 rounded-lg text-[13px] font-bold uppercase tracking-wider transition-opacity hover:opacity-90">
+            <i data-lucide="phone" class="h-4 w-4"></i> Call Us
+          </a>
+          <a href="auth.html" class="flex items-center justify-center gap-2 border border-primary/20 text-primary px-4 py-3 rounded-lg text-[13px] font-bold uppercase tracking-wider hover:bg-primary/5 transition-colors">
+            <i data-lucide="user-round" class="h-4 w-4"></i> Staff Login
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="py-16 min-h-[70vh]">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h1 class="text-4xl font-black text-gray-900 tracking-tighter uppercase tracking-tight mb-3">Financing Requirements</h1>
+        <p class="text-gray-600 text-lg">Please prepare the following documents for a smooth and fast approval process.</p>
+      </div>
+      
+      <div class="bg-white border border-gray-200 rounded-lg p-8 sm:p-12 shadow-sm mb-12">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-4 mb-6 uppercase tracking-wider text-sm">Principal Applicant (Maker)</h2>
+        <ul class="space-y-4 text-gray-700">
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Loan Application Form
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Three (3) photocopies of two (2) Valid IDs
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Two (2) pcs 2x2 Picture
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Two (2) photocopies Barangay Clearance
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Two (2) photocopies Cedula
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Proof of Billing
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Proof of Income
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Post-Dated Checks (if required)
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Marriage Certificate (if married, when required)
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> TIN Number (some financing companies)
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Signature Specimen
+          </li>
+        </ul>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-lg p-8 sm:p-12 shadow-sm mb-16">
+        <h2 class="text-2xl font-bold text-gray-900 border-b pb-4 mb-6 uppercase tracking-wider text-sm">Co-Maker</h2>
+        <ul class="space-y-4 text-gray-700">
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Valid IDs
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> 2x2 Picture
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Barangay Clearance
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Cedula
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Proof of Billing
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Proof of Income
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Marriage Certificate (if married)
+          </li>
+          <li class="flex items-start">
+            <span class="mr-3 text-red-600 font-bold">•</span> Signature Specimen
+          </li>
+        </ul>
+      </div>
+      
+      <div class="mt-16 bg-[#F0F7FF] border border-blue-100 rounded-2xl p-8 sm:p-12 text-center shadow-sm">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-white text-[#0084FF] rounded-full mb-5 shadow-md border border-blue-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="currentColor" class="bi bi-messenger" viewBox="0 0 16 16">
+            <path d="M0 7.76C0 3.301 3.493 0 8 0s8 3.301 8 7.76-3.493 7.76-8 7.76c-.81 0-1.586-.107-2.316-.307a.64.64 0 0 0-.427.03l-1.588.702a.64.64 0 0 1-.898-.566l-.044-1.423a.64.64 0 0 0-.215-.456C.956 12.108 0 10.092 0 7.76m5.546-1.459-2.35 3.728c-.225.358.214.761.551.506l2.525-1.916a.48.48 0 0 1 .578-.002l1.869 1.402a1.2 1.2 0 0 0 1.735-.32l2.35-3.728c.226-.358-.214-.761-.551-.506L9.728 7.381a.48.48 0 0 1-.578.002L7.281 5.98a1.2 1.2 0 0 0-1.735.32z"/>
+          </svg>
+        </div>
+        <h3 class="text-2xl sm:text-3xl tracking-tighter uppercase font-black text-gray-900 mb-3">Have any questions?</h3>
+        <p class="text-gray-600 mb-8 text-sm sm:text-base max-w-lg mx-auto leading-relaxed">We're here to help you through every step of the financing process. Send us a message on Facebook Messenger or give us a call, and our agents will assist you immediately.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-2">
+          <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#0084FF] text-white px-8 py-3.5 rounded-full font-bold uppercase tracking-widest hover:bg-blue-600 transition shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-messenger" viewBox="0 0 16 16">
+              <path d="M0 7.76C0 3.301 3.493 0 8 0s8 3.301 8 7.76-3.493 7.76-8 7.76c-.81 0-1.586-.107-2.316-.307a.64.64 0 0 0-.427.03l-1.588.702a.64.64 0 0 1-.898-.566l-.044-1.423a.64.64 0 0 0-.215-.456C.956 12.108 0 10.092 0 7.76m5.546-1.459-2.35 3.728c-.225.358.214.761.551.506l2.525-1.916a.48.48 0 0 1 .578-.002l1.869 1.402a1.2 1.2 0 0 0 1.735-.32l2.35-3.728c.226-.358-.214-.761-.551-.506L9.728 7.381a.48.48 0 0 1-.578.002L7.281 5.98a1.2 1.2 0 0 0-1.735.32z"/>
+            </svg>
+            Chat on Messenger
+          </a>
+          <a href="tel:09686995654" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-gray-800 border-2 border-gray-200 px-8 py-3 rounded-full font-bold uppercase tracking-widest hover:bg-gray-50 hover:border-gray-300 transition shadow-sm hover:shadow transform hover:-translate-y-0.5">
+            <i data-lucide="phone" class="h-4 w-4 text-gray-600"></i>
+            Call Us
+          </a>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-200 mt-16 pt-12 pb-4 text-center">
+        <h3 class="text-2xl tracking-tighter uppercase font-black text-primary mb-4 underline decoration-4 underline-offset-4">Visit Our Shop</h3>
+        <p class="text-gray-600 mb-6">Drop by to submit your requirements, inspect your dream car, and speak with our agents.</p>
+        
+        <div class="inline-block text-left bg-gray-50 p-6 rounded border border-gray-200">
+          <div class="mb-4">
+            <div class="text-xs uppercase tracking-wider font-bold text-gray-500 mb-1">Location</div>
+            <div id="site-loc" class="font-medium text-gray-900">Purok 2, Dapdap, Barobo, Surigao del Sur</div>
+          </div>
+          <div class="mb-4">
+            <div class="text-xs uppercase tracking-wider font-bold text-gray-500 mb-1">Contact Us</div>
+            <div id="site-phone" class="font-medium text-gray-900">0968 699 5654</div>
+            <div id="site-email" class="font-medium text-gray-900">capamul.cars20@gmail.com</div>
+            <a id="site-fb" href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:underline block mt-1">Facebook: CapamulCars</a>
+          </div>
+          <div>
+            <div class="text-xs uppercase tracking-wider font-bold text-gray-500 mb-1">Business Hours</div>
+            <div id="site-hours" class="font-medium text-gray-900">Monday - Saturday (8:00 AM - 5:00 PM)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+    <footer class="bg-[#f8f9fa] border-t border-gray-200 py-12 mt-10">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 items-start">
+      
+      <!-- Column 1: Logo & Socials -->
+      <div class="flex flex-col items-center sm:items-start text-center sm:text-left gap-4">
+        <!-- Logo -->
+        <a href="index.html" class="flex flex-col items-center sm:items-start min-w-0">
+          <div class="font-black tracking-tight text-3xl text-[#272d37]">
+            CAPAMUL <span class="text-primary font-bold">CARS 2.0</span>
+          </div>
+          <div class="text-xs italic text-primary font-medium mt-1">
+            All in <span class="font-bold not-italic">BEST</span> Condition
+          </div>
+        </a>
+        <div class="text-gray-400 text-xs mt-2">
+          &copy; <script>document.write(new Date().getFullYear())</script> CapamulCars 2.0. All rights reserved.
+        </div>
+        <!-- Socials -->
+        <div class="flex items-center gap-4 mt-2">
+          <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="text-gray-900 hover:text-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-facebook" viewBox="0 0 16 16">
+              <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Column 3: Contact Info -->
+      <div class="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 text-sm text-gray-700">
+        <h3 class="text-gray-900 font-bold text-base mb-2 uppercase tracking-wider">Contact Us</h3>
+        <div class="flex items-start gap-3">
+          <i data-lucide="map-pin" class="h-5 w-5 mt-0.5 text-gray-500 shrink-0"></i>
+          <span>Purok 2, Dapdap Barobo Surigao Del Sur</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="mail" class="h-5 w-5 text-gray-500 shrink-0"></i>
+          <a href="mailto:capamulcar2@gmail.com" class="hover:text-primary transition-colors">capamulcar2@gmail.com</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="phone" class="h-5 w-5 text-gray-500 shrink-0"></i>
+          <a href="tel:09686995654" class="hover:text-primary transition-colors">09686995654</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <i data-lucide="clock" class="h-5 w-5 text-gray-500 shrink-0"></i>
+          <span>Open: 8:00 am - 7:00 pm</span>
+        </div>
+      </div>
+
+      <!-- Column 4: Map -->
+      <div class="w-full h-48 sm:h-56 lg:h-[200px] rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.636145245386!2d126.1347448!3d8.5346596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32fdf1ff7ea05d37%3A0xedc36f9ff6a1ed58!2sCAPAMUL%20GARAGE!5e0!3m2!1sen!2sph!4v1783770400450!5m2!1sen!2sph" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+  <script src="js/data.js"></script>
+  <script src="js/modals.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

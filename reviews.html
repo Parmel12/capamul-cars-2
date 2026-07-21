@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Reviews — Capamul Cars 2.0</title>
+  <meta name="description" content="Read honest reviews from Capamul Cars customers. See real experiences from verified buyers and share your own story." />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Outfit', 'sans-serif'] },
+          colors: {
+            primary: '#9f1c1c',
+            'primary-foreground': '#ffffff',
+            background: '#fbfaf8',
+            foreground: '#272d37',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rv-card { animation: fadeInUp 0.35s ease both; }
+    #review-modal-panel { transition: transform 0.28s cubic-bezier(.34,1.3,.64,1), opacity 0.22s ease; }
+  </style>
+</head>
+<body class="bg-[#F8F9FA] text-gray-900 font-sans antialiased">
+
+  <!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+  <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-gray-100 shadow-sm">
+    <div class="max-w-7xl mx-auto h-20 px-4 sm:px-6 flex items-center justify-between gap-4">
+      <a href="index.html" class="flex items-center min-w-0">
+        <div class="leading-tight">
+          <div class="font-black tracking-tight text-base sm:text-lg lg:text-xl text-[#272d37]">
+            CAPAMUL <span class="text-primary font-bold">CARS 2.0</span>
+          </div>
+          <div class="text-[10px] italic text-primary/80 font-medium">
+            All in <span class="font-bold not-italic">BEST</span> Condition
+          </div>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center justify-center gap-2">
+        <a href="index.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Home</a>
+        <a href="cars.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Inventory</a>
+        <a href="financing.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Financing</a>
+        <button type="button" class="test-drive-nav-btn px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200 inline-flex items-center gap-1.5">Book Test Drive</button>
+        <a href="reviews.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-primary border-b-2 border-primary transition-all duration-200">Reviews</a>
+        <a href="about.html" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">About Us</a>
+        <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="px-3 py-2 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:border-b-2 hover:border-primary transition-all duration-200">Contact Us</a>
+      </nav>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <a href="tel:09686995654" class="hidden sm:inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide shadow-sm hover:opacity-90">
+          <i data-lucide="phone" class="h-3.5 w-3.5"></i> Call Us
+        </a>
+        <a href="auth.html" class="hidden lg:grid h-9 w-9 place-items-center rounded-full border border-primary/40 text-primary hover:bg-primary hover:text-white transition" title="Staff Login">
+          <i data-lucide="user-round" class="h-4 w-4"></i>
+        </a>
+        <button type="button" id="mobile-menu-btn" aria-label="Open menu" class="lg:hidden h-10 w-10 grid place-items-center rounded-md hover:bg-black/5">
+          <i data-lucide="menu" class="h-6 w-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden">
+      <div class="fixed inset-0 top-20 bg-black/40 z-30"></div>
+      <nav class="fixed top-20 right-0 z-40 w-72 max-w-[85vw] h-[calc(100vh-5rem)] bg-white border-l border-black/10 shadow-xl flex flex-col p-3 gap-1">
+        <a href="index.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Home</a>
+        <a href="cars.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Inventory</a>
+        <a href="financing.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Financing</a>
+        <button type="button" class="test-drive-nav-btn px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors text-left inline-flex items-center gap-2">Book Test Drive</button>
+        <a href="reviews.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-primary bg-primary/5 rounded-lg">Reviews</a>
+        <a href="about.html" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">About Us</a>
+        <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="px-4 py-3 text-[13px] font-bold uppercase tracking-wider text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">Contact Us</a>
+        <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">
+          <a href="tel:09686995654" class="flex items-center justify-center gap-2 bg-primary text-white px-4 py-3 rounded-lg text-[13px] font-bold uppercase tracking-wider transition-opacity hover:opacity-90">
+            <i data-lucide="phone" class="h-4 w-4"></i> Call Us
+          </a>
+          <a href="auth.html" class="flex items-center justify-center gap-2 border border-primary/20 text-primary px-4 py-3 rounded-lg text-[13px] font-bold uppercase tracking-wider hover:bg-primary/5 transition-colors">
+            <i data-lucide="user-round" class="h-4 w-4"></i> Staff Login
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+  <section class="bg-black text-white relative overflow-hidden py-20 sm:py-28">
+    <div class="absolute inset-0 bg-[url('images/hero-bg.jpg')] bg-cover bg-center opacity-10"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black"></div>
+    <div class="max-w-3xl mx-auto px-6 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/70 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-sm mb-5">
+        <i data-lucide="quote" class="h-3.5 w-3.5"></i> Customer Stories
+      </div>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-5">
+        REAL STORIES,<br /><span class="text-primary">REAL DRIVERS</span>
+      </h1>
+      <p class="text-sm sm:text-base text-gray-300 max-w-lg mx-auto mb-8">
+        Hear from people who found their dream car at Capamul Cars — and share your own experience.
+      </p>
+      <!-- Dynamic Rating -->
+      <div class="flex items-center justify-center gap-3 mb-8">
+        <div class="flex gap-1" id="avg-stars"></div>
+        <div class="text-white">
+          <span class="text-2xl font-black" id="avg-score">—</span>
+          <span class="text-white/50 ml-2 text-sm">from <span id="review-count">0</span> reviews</span>
+        </div>
+      </div>
+      <button id="open-review-modal-btn"
+        class="inline-flex items-center gap-2 bg-primary/30 hover:bg-primary/50 text-white font-black py-4 px-8 rounded-full uppercase tracking-widest text-sm transition-all shadow-xl shadow-primary/30 hover:-translate-y-1 hover:shadow-primary/50 active:scale-95 border border-primary/40 backdrop-blur-md">
+        <i data-lucide="edit-3" class="h-4 w-4"></i> Write a Review
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ MAIN CONTENT ═══════════════════════════ -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+
+    <!-- ── STATS CARD ─────────────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 mb-8">
+      <div class="grid sm:grid-cols-2 gap-8 items-center">
+        <div class="text-center sm:text-left">
+          <div class="text-7xl font-black text-gray-900 leading-none mb-2" id="stat-avg-score">—</div>
+          <div class="flex gap-1 justify-center sm:justify-start mb-2" id="stat-avg-stars"></div>
+          <p class="text-sm text-gray-500 font-medium">Based on <span id="stat-review-count">0</span> verified customer reviews</p>
+          <span class="inline-flex items-center gap-1.5 mt-4 text-xs font-bold text-green-700 bg-green-50 border border-green-100 px-3 py-1.5 rounded-full">
+            <i data-lucide="shield-check" class="h-3.5 w-3.5"></i> All Verified Buyers
+          </span>
+        </div>
+        <div class="space-y-3" id="rating-breakdown">
+          <div class="flex items-center gap-3 text-xs"><div class="w-20 h-2 bg-gray-100 rounded-full animate-pulse flex-1"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOOLBAR ─────────────────────────────────────────────────── -->
+    <div class="flex flex-col sm:flex-row gap-3 mb-8">
+      <div class="relative flex-1">
+        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none"></i>
+        <input id="search-input" type="text" placeholder="Search reviews by name or content…"
+          class="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 shadow-sm focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10 transition-all" />
+      </div>
+      <select id="sort-select" class="py-3.5 px-4 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 shadow-sm focus:outline-none focus:border-primary/40 cursor-pointer appearance-none pr-9">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="highest">Highest Rating</option>
+        <option value="lowest">Lowest Rating</option>
+      </select>
+      <select id="filter-rating" class="py-3.5 px-4 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 shadow-sm focus:outline-none focus:border-primary/40 cursor-pointer appearance-none pr-9">
+        <option value="all">All Ratings</option>
+        <option value="5">⭐⭐⭐⭐⭐  5 Stars</option>
+        <option value="4">⭐⭐⭐⭐  4 Stars</option>
+        <option value="3">⭐⭐⭐  3 Stars</option>
+        <option value="2">⭐⭐  2 Stars</option>
+        <option value="1">⭐  1 Star</option>
+      </select>
+    </div>
+
+    <!-- ── REVIEWS GRID ────────────────────────────────────────────── -->
+    <div id="reviews-list-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <!-- ── LOAD MORE ──────────────────────────────────────────────── -->
+    <div class="text-center mt-12">
+      <button id="load-more-btn" class="hidden items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold py-4 px-10 rounded-full text-sm uppercase tracking-widest transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95">
+        <i data-lucide="chevrons-down" class="h-4 w-4"></i> Load More Reviews
+      </button>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- ═══════════════════════════ MODAL ═══════════════════════════ -->
+  <div id="review-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modal-backdrop"></div>
+    <div id="review-modal-panel"
+      class="relative bg-white rounded-3xl w-full max-w-lg max-h-[93vh] overflow-y-auto shadow-2xl z-10 scale-95 opacity-0">
+
+      <!-- Panel Header -->
+      <div class="sticky top-0 bg-white/95 backdrop-blur-sm rounded-t-3xl border-b border-gray-100 px-6 sm:px-8 py-5 flex items-center justify-between z-20">
+        <div>
+          <h2 class="text-lg font-black text-gray-900 tracking-tight">Share Your Experience</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Reviewed by real Capamul Cars customers only.</p>
+        </div>
+        <button id="close-review-modal-btn" type="button" class="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <!-- Panel Body -->
+      <div class="px-6 sm:px-8 py-6" id="modal-form-body">
+        <form id="submit-review-form" class="space-y-5" novalidate>
+
+          <!-- Stars -->
+          <div>
+            <label class="block text-[11px] font-black text-gray-600 uppercase tracking-widest mb-3">Your Rating *</label>
+            <div class="flex gap-2" id="star-selector">
+              <button type="button" class="star-btn transition-all hover:scale-110 active:scale-95" data-val="1"><i data-lucide="star" class="h-9 w-9 text-gray-200 stroke-gray-200 transition-colors"></i></button>
+              <button type="button" class="star-btn transition-all hover:scale-110 active:scale-95" data-val="2"><i data-lucide="star" class="h-9 w-9 text-gray-200 stroke-gray-200 transition-colors"></i></button>
+              <button type="button" class="star-btn transition-all hover:scale-110 active:scale-95" data-val="3"><i data-lucide="star" class="h-9 w-9 text-gray-200 stroke-gray-200 transition-colors"></i></button>
+              <button type="button" class="star-btn transition-all hover:scale-110 active:scale-95" data-val="4"><i data-lucide="star" class="h-9 w-9 text-gray-200 stroke-gray-200 transition-colors"></i></button>
+              <button type="button" class="star-btn transition-all hover:scale-110 active:scale-95" data-val="5"><i data-lucide="star" class="h-9 w-9 text-gray-200 stroke-gray-200 transition-colors"></i></button>
+            </div>
+            <p id="rating-label" class="text-xs font-bold text-amber-500 mt-2">Excellent ✨</p>
+          </div>
+
+          <!-- Name -->
+          <div>
+            <label class="block text-[11px] font-black text-gray-600 uppercase tracking-widest mb-2" for="rv-name">Full Name *</label>
+            <input id="rv-name" required placeholder="e.g. Juan Dela Cruz"
+              class="w-full border border-gray-200 bg-gray-50/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all text-gray-900 placeholder:text-gray-400" />
+          </div>
+
+          <!-- Vehicle -->
+          <div>
+            <label class="block text-[11px] font-black text-gray-600 uppercase tracking-widest mb-2" for="rv-vehicle">Vehicle Purchased</label>
+            <input id="rv-vehicle" placeholder="e.g. Toyota Vios 2020"
+              class="w-full border border-gray-200 bg-gray-50/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all text-gray-900 placeholder:text-gray-400" />
+          </div>
+
+          <!-- Review Text -->
+          <div>
+            <label class="block text-[11px] font-black text-gray-600 uppercase tracking-widest mb-2" for="rv-body">Your Review *</label>
+            <textarea id="rv-body" required rows="4" placeholder="Tell us about your experience…"
+              class="w-full border border-gray-200 bg-gray-50/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/10 transition-all text-gray-900 placeholder:text-gray-400 resize-none"></textarea>
+            <div class="flex justify-end mt-1">
+              <span class="text-[11px] text-gray-400"><span id="char-count">0</span>/500</span>
+            </div>
+          </div>
+
+          <!-- Photos -->
+          <div>
+            <label class="block text-[11px] font-black text-gray-600 uppercase tracking-widest mb-3">Photos <span class="font-medium text-gray-400 normal-case tracking-normal text-xs">(up to 5)</span></label>
+            <div class="flex flex-wrap gap-2 items-start">
+              <label id="rv-image-label" for="rv-image"
+                class="cursor-pointer group flex flex-col items-center justify-center w-20 h-20 shrink-0 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-primary/5 transition-all">
+                <i data-lucide="camera" class="h-5 w-5 text-gray-400 group-hover:text-primary mb-1 transition-colors"></i>
+                <span class="text-[9px] font-bold text-gray-400 group-hover:text-primary uppercase tracking-wide text-center">Add Photo</span>
+              </label>
+              <input type="file" id="rv-image" accept="image/*" multiple class="hidden" />
+              <div id="rv-image-preview-container" class="hidden flex-wrap gap-2"></div>
+            </div>
+            <p id="rv-image-error" class="text-xs text-red-500 mt-2 hidden">Maximum 5 photos allowed.</p>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-3 pt-2">
+            <button type="button" id="cancel-review-btn"
+              class="flex-1 border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold py-3.5 rounded-xl text-sm transition-all hover:border-gray-300">
+              Cancel
+            </button>
+            <button type="submit" id="submit-review-btn"
+              class="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-6 rounded-xl text-sm uppercase tracking-widest transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95">
+              Submit Review
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+  <footer class="bg-[#f8f9fa] border-t border-gray-200 py-12 mt-10">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 items-start">
+      <div class="flex flex-col items-center sm:items-start text-center sm:text-left gap-4">
+        <a href="index.html" class="flex flex-col items-center sm:items-start min-w-0">
+          <div class="font-black tracking-tight text-3xl text-[#272d37]">CAPAMUL <span class="text-primary font-bold">CARS 2.0</span></div>
+          <div class="text-xs italic text-primary font-medium mt-1">All in <span class="font-bold not-italic">BEST</span> Condition</div>
+        </a>
+        <div class="text-gray-400 text-xs mt-2">&copy; <script>document.write(new Date().getFullYear())</script> CapamulCars 2.0. All rights reserved.</div>
+        <div class="flex items-center gap-4 mt-2">
+          <a href="https://www.facebook.com/share/1Eq7cKc5uA/" target="_blank" rel="noopener noreferrer" class="text-gray-900 hover:text-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="flex flex-col items-center sm:items-start text-center sm:text-left gap-4 text-sm text-gray-700">
+        <h3 class="text-gray-900 font-bold text-base mb-2 uppercase tracking-wider">Contact Us</h3>
+        <div class="flex items-start gap-3"><i data-lucide="map-pin" class="h-5 w-5 mt-0.5 text-gray-500 shrink-0"></i><span>Purok 2, Dapdap Barobo Surigao Del Sur</span></div>
+        <div class="flex items-center gap-3"><i data-lucide="mail" class="h-5 w-5 text-gray-500 shrink-0"></i><a href="mailto:capamulcar2@gmail.com" class="hover:text-primary transition-colors">capamulcar2@gmail.com</a></div>
+        <div class="flex items-center gap-3"><i data-lucide="phone" class="h-5 w-5 text-gray-500 shrink-0"></i><a href="tel:09686995654" class="hover:text-primary transition-colors">09686995654</a></div>
+        <div class="flex items-center gap-3"><i data-lucide="clock" class="h-5 w-5 text-gray-500 shrink-0"></i><span>Open: 8:00 am - 7:00 pm</span></div>
+      </div>
+      <div class="w-full h-48 sm:h-56 lg:h-[200px] rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3945.636145245386!2d126.1347448!3d8.5346596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32fdf1ff7ea05d37%3A0xedc36f9ff6a1ed58!2sCAPAMUL%20GARAGE!5e0!3m2!1sen!2sph!4v1783770400450!5m2!1sen!2sph" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+    </div>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+  <script src="js/data.js"></script>
+  <script src="js/modals.js"></script>
+  <script src="js/main.js"></script>
+
+  <!-- ═══════════════════════════ REVIEWS SCRIPT ═══════════════════════════ -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+
+    /* ─── DOM REFS ──────────────────────────────── */
+    const container     = document.getElementById('reviews-list-container');
+    const avgScoreEl    = document.getElementById('avg-score');
+    const avgStarsEl    = document.getElementById('avg-stars');
+    const reviewCountEl = document.getElementById('review-count');
+    const statAvgEl     = document.getElementById('stat-avg-score');
+    const statStarsEl   = document.getElementById('stat-avg-stars');
+    const statCountEl   = document.getElementById('stat-review-count');
+    const breakdownEl   = document.getElementById('rating-breakdown');
+    const searchInput   = document.getElementById('search-input');
+    const sortSelect    = document.getElementById('sort-select');
+    const filterSelect  = document.getElementById('filter-rating');
+    const loadMoreBtn   = document.getElementById('load-more-btn');
+    const modal         = document.getElementById('review-modal');
+    const panel         = document.getElementById('review-modal-panel');
+    const openBtn       = document.getElementById('open-review-modal-btn');
+    const closeBtn      = document.getElementById('close-review-modal-btn');
+    const cancelBtn     = document.getElementById('cancel-review-btn');
+    const backdrop      = document.getElementById('modal-backdrop');
+    const submitForm    = document.getElementById('submit-review-form');
+    const rvBody        = document.getElementById('rv-body');
+    const charCount     = document.getElementById('char-count');
+    const ratingLabel   = document.getElementById('rating-label');
+
+    /* ─── MODAL ──────────────────────────────────── */
+    const ratingLabels = { 1:'Poor 😕', 2:'Fair 🙂', 3:'Good 👍', 4:'Very Good 😊', 5:'Excellent ✨' };
+
+    function openModal() {
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        panel.style.transform = 'scale(1)';
+        panel.style.opacity   = '1';
+      });
+      document.body.style.overflow = 'hidden';
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      panel.style.transform = 'scale(0.95)';
+      panel.style.opacity   = '0';
+      setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 280);
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+
+    /* ─── CHAR COUNTER ───────────────────────────── */
+    rvBody.addEventListener('input', () => charCount.textContent = rvBody.value.length);
+
+    /* ─── STAR SELECTOR ──────────────────────────── */
+    let currentRating = 5;
+    const starBtns = document.querySelectorAll('.star-btn');
+
+    function setRating(val) {
+      currentRating = val;
+      ratingLabel.textContent = ratingLabels[val] || '';
+      starBtns.forEach((btn, i) => {
+        const svg = btn.querySelector('svg');
+        if (!svg) return;
+        if (i < val) {
+          svg.classList.remove('text-gray-200', 'stroke-gray-200');
+          svg.classList.add('text-amber-400', 'fill-amber-400', 'stroke-amber-400');
+        } else {
+          svg.classList.remove('text-amber-400', 'fill-amber-400', 'stroke-amber-400');
+          svg.classList.add('text-gray-200', 'stroke-gray-200');
+        }
+      });
+    }
+    starBtns.forEach(btn => btn.addEventListener('click', () => setRating(+btn.dataset.val)));
+    setRating(5);
+
+    /* ─── IMAGE UPLOAD ───────────────────────────── */
+    const imageInput  = document.getElementById('rv-image');
+    const imageLabel  = document.getElementById('rv-image-label');
+    const previewWrap = document.getElementById('rv-image-preview-container');
+    const imageError  = document.getElementById('rv-image-error');
+    let selectedFiles = [];
+
+    function renderPreviews() {
+      previewWrap.innerHTML = '';
+      if (!selectedFiles.length) {
+        previewWrap.classList.add('hidden');
+        imageLabel.classList.remove('hidden'); imageLabel.classList.add('flex'); return;
+      }
+      previewWrap.classList.remove('hidden');
+      selectedFiles.forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const div = document.createElement('div');
+          div.className = 'relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shrink-0 group';
+          div.innerHTML = `<img src="${ev.target.result}" class="w-full h-full object-cover"/><button type="button" class="rv-rm absolute top-1 right-1 bg-black/60 hover:bg-black rounded-full p-1 text-white transition-colors" data-i="${i}"><i data-lucide="x" class="h-3 w-3"></i></button>`;
+          previewWrap.appendChild(div);
+          lucide.createIcons();
+          div.querySelector('.rv-rm').addEventListener('click', function() {
+            selectedFiles.splice(+this.dataset.i, 1);
+            renderPreviews();
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+      const hasRoom = selectedFiles.length < 5;
+      imageLabel.classList.toggle('hidden', !hasRoom);
+      imageLabel.classList.toggle('flex', hasRoom);
+    }
+
+    imageInput.addEventListener('change', e => {
+      const files = Array.from(e.target.files);
+      imageError.classList.add('hidden');
+      if (selectedFiles.length + files.length > 5) { imageError.classList.remove('hidden'); imageInput.value = ''; return; }
+      files.forEach(f => { if (selectedFiles.length < 5) selectedFiles.push(f); });
+      renderPreviews(); imageInput.value = '';
+    });
+
+    /* ─── HELPERS ────────────────────────────────── */
+    function starsHTML(n, sz = 'h-4 w-4') {
+      return Array(5).fill(0).map((_, i) =>
+        `<i data-lucide="star" class="${sz} ${i < n ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}"></i>`
+      ).join('');
+    }
+
+    function avatarBg(name) {
+      const pool = ['bg-red-500','bg-blue-500','bg-purple-600','bg-green-600','bg-orange-500','bg-teal-600','bg-pink-500','bg-indigo-600','bg-cyan-600'];
+      let h = 0;
+      for (const c of (name || 'A')) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+      return pool[Math.abs(h) % pool.length];
+    }
+
+    function fmtDate(d) {
+      return new Date(d || Date.now()).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    /* ─── BUILD CARD ─────────────────────────────── */
+    function buildCard(r, delay) {
+      const imgVal = r.image_url || r.image;
+      let photosHTML = '';
+      if (imgVal) {
+        let urls = [];
+        try { urls = imgVal.startsWith('[') ? JSON.parse(imgVal) : [imgVal]; } catch { urls = [imgVal]; }
+        urls = urls.filter(Boolean);
+        if (urls.length === 1) {
+          photosHTML = `<div class="mt-4 aspect-video rounded-xl overflow-hidden bg-gray-100"><img src="${urls[0]}" class="w-full h-full object-cover cursor-zoom-in hover:scale-105 transition-transform duration-500" onclick="window.open('${urls[0]}')"/></div>`;
+        } else if (urls.length > 1) {
+          const shown = urls.slice(0, 4);
+          const extra = urls.length - 4;
+          photosHTML = `<div class="mt-4 grid grid-cols-2 gap-1.5">${shown.map((u, i) =>
+            `<div class="aspect-square rounded-lg overflow-hidden bg-gray-100 relative"><img src="${u}" class="w-full h-full object-cover cursor-zoom-in" onclick="window.open('${u}')"/>${i===3&&extra>0?`<div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-black text-xl">+${extra}</div>`:''}</div>`
+          ).join('')}</div>`;
+        }
+      }
+      const msg = r.message || r.comment || r.body || '';
+      const truncated = msg.length > 260 ? msg.slice(0, 260) + '…' : msg;
+      const vehicle = r.vehicle ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/5 border border-primary/15 px-2 py-0.5 rounded-full mt-1"><i data-lucide="car" class="h-2.5 w-2.5"></i>${r.vehicle}</span>` : '';
+      const bg = avatarBg(r.author || r.name);
+
+      return `
+      <article class="rv-card group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden" style="animation-delay:${delay}ms">
+        <div class="p-6 flex flex-col flex-1">
+          <div class="flex items-start justify-between mb-4 gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="h-11 w-11 rounded-full ${bg} text-white grid place-items-center text-base font-black shadow-sm flex-shrink-0 group-hover:ring-2 group-hover:ring-primary/30 transition-all">
+                ${(r.author || r.name || 'A').slice(0, 1).toUpperCase()}
+              </div>
+              <div class="min-w-0">
+                <div class="font-bold text-gray-900 text-sm truncate leading-tight">${r.author || r.name || 'Anonymous'}</div>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  <span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 border border-green-100 px-2 py-0.5 rounded-full"><i data-lucide="check-circle" class="h-2.5 w-2.5"></i>Verified Buyer</span>
+                  ${vehicle}
+                </div>
+              </div>
+            </div>
+            <div class="text-[10px] text-gray-400 font-medium whitespace-nowrap shrink-0">${fmtDate(r.created_at || r.date)}</div>
+          </div>
+
+          <div class="flex gap-0.5 mb-3">${starsHTML(r.rating)}</div>
+
+          <p class="text-[13px] text-gray-600 leading-relaxed flex-1">${truncated}</p>
+
+          ${photosHTML}
+
+          <div class="mt-5 pt-4 border-t border-gray-50 flex items-center justify-between">
+            ${r.is_success_story ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/8 border border-primary/20 px-2.5 py-1 rounded-full"><i data-lucide="trophy" class="h-3 w-3"></i>Success Story</span>` : '<span></span>'}
+            <button type="button" class="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-primary transition-colors">
+              <i data-lucide="thumbs-up" class="h-3.5 w-3.5"></i> Helpful
+            </button>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    /* ─── PAGINATION STATE ───────────────────────── */
+    const PAGE_SIZE = 6;
+    let allReviews = [], displayed = 0;
+
+    function getFiltered() {
+      const q   = searchInput.value.trim().toLowerCase();
+      const rat = filterSelect.value;
+      const srt = sortSelect.value;
+
+      let list = allReviews.filter(r => {
+        const txt = ((r.author||r.name||'') + ' ' + (r.message||r.comment||r.body||'')).toLowerCase();
+        return (!q || txt.includes(q)) && (rat === 'all' || +r.rating === +rat);
+      });
+
+      list.sort((a, b) => {
+        const da = new Date(a.created_at || a.date || 0);
+        const db = new Date(b.created_at || b.date || 0);
+        if (srt === 'newest')  return db - da;
+        if (srt === 'oldest')  return da - db;
+        if (srt === 'highest') return b.rating - a.rating;
+        if (srt === 'lowest')  return a.rating - b.rating;
+      });
+      return list;
+    }
+
+    function renderGrid(reset = false) {
+      const filtered = getFiltered();
+      if (reset) { container.innerHTML = ''; displayed = 0; }
+
+      if (!filtered.length && !displayed) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-20 text-gray-400">
+            <i data-lucide="search-x" class="h-12 w-12 mx-auto mb-4 opacity-30"></i>
+            <p class="font-semibold text-gray-500">No reviews match your search.</p>
+            <p class="text-sm mt-1">Try adjusting your filters or search terms.</p>
+          </div>`;
+        lucide.createIcons();
+        loadMoreBtn.classList.add('hidden'); loadMoreBtn.classList.remove('inline-flex');
+        return;
+      }
+
+      const slice = filtered.slice(displayed, displayed + PAGE_SIZE);
+      slice.forEach((r, i) => container.insertAdjacentHTML('beforeend', buildCard(r, i * 70)));
+      displayed += slice.length;
+
+      const hasMore = displayed < filtered.length;
+      loadMoreBtn.classList.toggle('hidden', !hasMore);
+      loadMoreBtn.classList.toggle('inline-flex', hasMore);
+      lucide.createIcons();
+    }
+
+    loadMoreBtn.addEventListener('click', () => renderGrid(false));
+    [searchInput, sortSelect, filterSelect].forEach(el => el.addEventListener('input', () => renderGrid(true)));
+
+    /* ─── STATS ──────────────────────────────────── */
+    function renderStats(reviews) {
+      const total = reviews.length;
+      const sum   = reviews.reduce((s, r) => s + r.rating, 0);
+      const avg   = total > 0 ? sum / total : 0;
+      const rounded = Math.round(avg);
+
+      avgScoreEl.textContent    = avg.toFixed(1);
+      reviewCountEl.textContent = total;
+      avgStarsEl.innerHTML      = starsHTML(rounded);
+
+      statAvgEl.textContent    = avg.toFixed(1);
+      statCountEl.textContent  = total;
+      statStarsEl.innerHTML    = starsHTML(rounded);
+
+      const counts = { 5:0, 4:0, 3:0, 2:0, 1:0 };
+      reviews.forEach(r => { if (counts[r.rating] !== undefined) counts[r.rating]++; });
+
+      breakdownEl.innerHTML = [5, 4, 3, 2, 1].map(s => {
+        const pct = total > 0 ? Math.round((counts[s] / total) * 100) : 0;
+        return `
+          <div class="flex items-center gap-3 text-xs">
+            <span class="w-20 font-semibold text-gray-500 shrink-0 text-amber-500">${'★'.repeat(s)}<span class="text-gray-300">${'★'.repeat(5 - s)}</span></span>
+            <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-2 bg-amber-400 rounded-full transition-all duration-700 ease-out" style="width:${pct}%"></div>
+            </div>
+            <span class="w-8 text-right font-bold text-gray-600 shrink-0">${counts[s]}</span>
+          </div>`;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    /* ─── LOAD DATA ──────────────────────────────── */
+    async function loadData() {
+      container.innerHTML = `
+        <div class="col-span-full flex items-center justify-center py-24">
+          <div class="h-9 w-9 border-2 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+        </div>`;
+      try {
+        allReviews = await api.getReviews();
+        renderStats(allReviews);
+        renderGrid(true);
+      } catch(err) {
+        container.innerHTML = `<div class="col-span-full text-center py-20 text-gray-400"><p class="font-medium">Failed to load reviews. Please try again.</p></div>`;
+        lucide.createIcons();
+      }
+    }
+    loadData();
+
+    /* ─── FORM SUBMIT ────────────────────────────── */
+    submitForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const name = document.getElementById('rv-name').value.trim();
+      const body = document.getElementById('rv-body').value.trim();
+      if (!name || !body) {
+        alert('Please fill in your name and review.');
+        return;
+      }
+
+      let imageBase64 = null;
+      if (selectedFiles.length > 0) {
+        const b64s = await Promise.all(selectedFiles.map(f => new Promise(res => {
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 800;
+              const MAX_HEIGHT = 800;
+              let width = img.width;
+              let height = img.height;
+              
+              if (width > height) {
+                if (width > MAX_WIDTH) {
+                  height *= MAX_WIDTH / width;
+                  width = MAX_WIDTH;
+                }
+              } else {
+                if (height > MAX_HEIGHT) {
+                  width *= MAX_HEIGHT / height;
+                  height = MAX_HEIGHT;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              // Compress to JPEG with 60% quality
+              res(canvas.toDataURL('image/jpeg', 0.6));
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(f);
+        })));
+        imageBase64 = JSON.stringify(b64s);
+      }
+
+      const submitBtn = document.getElementById('submit-review-btn');
+      submitBtn.textContent = 'Submitting…';
+      submitBtn.disabled = true;
+      
+      let safeImageData = imageBase64;
+      // Safety net for massive payloads, but compression makes this very unlikely to hit
+      if (imageBase64 && imageBase64.length > 3000000) {
+        console.warn('Compressed images still too large for DB (>3MB), dropping images.');
+        safeImageData = null;
+      }
+
+      const vehicleInfo = document.getElementById('rv-vehicle').value.trim();
+      const finalMessage = vehicleInfo ? `[Vehicle: ${vehicleInfo}] ${body}` : body;
+
+      const res = await api.addReview({
+        name,
+        message: finalMessage,
+        rating: currentRating,
+        image_url: safeImageData
+      });
+
+      if (res && !res.success) {
+        submitBtn.textContent = 'Submit Review';
+        submitBtn.disabled = false;
+        const errMsg = res.error?.message || 'Unknown error';
+        // If error is about content length, retry without image
+        if (errMsg.toLowerCase().includes('too large') || errMsg.toLowerCase().includes('413')) {
+          const retryRes = await api.addReview({ name, message: finalMessage, rating: currentRating, image_url: null });
+          if (!retryRes || !retryRes.success) {
+            alert('Error submitting review. Please try again.');
+            return;
+          }
+          // Fall through to success
+        } else {
+          alert('Error submitting review: ' + errMsg);
+          return;
+        }
+      }
+
+      // Success state
+      document.getElementById('modal-form-body').innerHTML = `
+        <div class="text-center py-12 px-4">
+          <div class="h-20 w-20 rounded-full bg-green-50 border-2 border-green-100 flex items-center justify-center mx-auto mb-5">
+            <i data-lucide="check-circle-2" class="h-10 w-10 text-green-500"></i>
+          </div>
+          <h3 class="text-2xl font-black text-gray-900 mb-2">Thanks for sharing!</h3>
+          <p class="text-sm text-gray-500 mb-8 max-w-xs mx-auto">Your review has been submitted and will appear on the site after moderation. We truly appreciate your feedback!</p>
+          <button onclick="location.reload()" class="bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-10 rounded-full text-sm uppercase tracking-widest transition-all shadow-lg shadow-primary/20 active:scale-95">Done</button>
+        </div>`;
+      lucide.createIcons();
+    });
+
+  });
+  </script>
+
+</body>
+</html>
