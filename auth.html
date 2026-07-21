@@ -159,6 +159,14 @@
       const newCount = loginCount + 1;
       localStorage.setItem('device_login_count', newCount.toString());
       localStorage.setItem('admin_token', 'capamul_admin_session');
+
+      // Generate a unique device_id for this browser if it doesn't have one yet.
+      // This is used by admin.js to track this device and allow revocation.
+      if (!localStorage.getItem('device_id')) {
+        const uid = 'dev-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+        localStorage.setItem('device_id', uid);
+      }
+
       window.location.href = 'admin.html';
     }
 

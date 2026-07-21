@@ -2238,6 +2238,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── DEVICE MANAGEMENT & CONTINUOUS SECURITY ───────────────────────────
+
+  // Auto-register this device in the DB when admin panel loads.
+  // Without this, the device is never in the list and revoke never works.
+  const registerCurrentDevice = async () => {
+    if (!window.api) return;
+    const deviceId = localStorage.getItem('device_id');
+    if (!deviceId) return; // No device_id means auth.html didn't set it yet
+
+    try {
+      const devices = await window.api.getVerifiedDevices();
+      const already = devices.some(d => d.id === deviceId);
+      if (!already) {
+        const newDevice = {
+          id: deviceId,
+          userAgent: navigator.userAgent,
+          addedAt: new Date().toISOString()
+        };
+        await window.api.updateVerifiedDevices([...devices, newDevice]);
+      }
+    } catch(e) {
+      console.error('Failed to register device:', e);
+    }
+  };
+
+  // Run registration once on load
+  registerCurrentDevice();
+
   const renderDevicesList = async () => {
     if (!window.api) return;
     const listEl = document.getElementById('devices-list');
@@ -2316,52 +2343,59 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!ua) return 'Unknown Device';
     const u = ua.toLowerCase();
 
-    // ── Mobile brands (check before generic phone) ──
+    // ── iPhone / iPad ──
     if (u.includes('iphone'))                                    return 'iPhone';
     if (u.includes('ipad'))                                      return 'iPad';
-    if (u.includes('samsung') && u.includes('mobile'))          return 'Samsung Phone';
-    if (u.includes('samsung'))                                   return 'Samsung Device';
-    if (u.includes('huawei') && u.includes('mobile'))           return 'Huawei Phone';
-    if (u.includes('huawei'))                                    return 'Huawei Device';
-    if (u.includes('xiaomi') && u.includes('mobile'))           return 'Xiaomi Phone';
-    if (u.includes('xiaomi'))                                    return 'Xiaomi Device';
-    if (u.includes('oppo') && u.includes('mobile'))             return 'OPPO Phone';
-    if (u.includes('vivo') && u.includes('mobile'))             return 'Vivo Phone';
-    if (u.includes('realme') && u.includes('mobile'))           return 'Realme Phone';
-    if (u.includes('android') && u.includes('mobile'))          return 'Android Phone';
-    if (u.includes('android'))                                   return 'Android Tablet';
+
+    // ── Android phones & tablets (brand detection) ──
+    if (u.includes('android')) {
+      const isMobile = u.includes('mobile');
+      // Samsung
+      if (u.includes('samsung') || u.includes('sm-'))          return isMobile ? 'Samsung Phone' : 'Samsung Tablet';
+      // Huawei
+      if (u.includes('huawei') || u.includes('honor'))          return isMobile ? 'Huawei Phone' : 'Huawei Tablet';
+      // Xiaomi / Redmi / POCO
+      if (u.includes('xiaomi') || u.includes('redmi') || u.includes('poco'))  return isMobile ? 'Xiaomi Phone' : 'Xiaomi Tablet';
+      // OPPO / Realme / OnePlus
+      if (u.includes('oppo'))                                   return 'OPPO Phone';
+      if (u.includes('realme'))                                 return 'Realme Phone';
+      if (u.includes('oneplus'))                                return 'OnePlus Phone';
+      // Vivo
+      if (u.includes('vivo'))                                   return 'Vivo Phone';
+      // Tecno / Infinix / itel
+      if (u.includes('tecno'))                                  return 'Tecno Phone';
+      if (u.includes('infinix'))                                return 'Infinix Phone';
+      // LG
+      if (u.includes('lg-') || u.includes('lm-'))              return isMobile ? 'LG Phone' : 'LG Tablet';
+      // Google Pixel
+      if (u.includes('pixel'))                                  return 'Google Pixel';
+      // Generic
+      return isMobile ? 'Android Phone' : 'Android Tablet';
+    }
 
     // ── Windows laptop/desktop brands ──
     if (u.includes('windows')) {
-      // Try to detect brand from common OEM strings
-      if (u.includes('acer'))                                    return 'Acer Laptop';
-      if (u.includes('asus') || u.includes('asustek'))          return 'ASUS Laptop';
-      if (u.includes('lenovo'))                                  return 'Lenovo Laptop';
-      if (u.includes('hewlett') || u.includes('hp-'))           return 'HP Laptop';
-      if (u.includes('dell'))                                    return 'Dell Laptop';
-      if (u.includes('toshiba'))                                 return 'Toshiba Laptop';
-      if (u.includes('sony') || u.includes('vaio'))             return 'Sony Laptop';
-      if (u.includes('msi'))                                     return 'MSI Laptop';
-      if (u.includes('razer'))                                   return 'Razer Laptop';
-      if (u.includes('surface'))                                 return 'Microsoft Surface';
-      // Windows without brand — guess laptop vs desktop by common UA hints
-      if (u.includes('wow64') || u.includes('win64') || u.includes('win32')) {
-        return 'Windows PC';
-      }
-      return 'Windows Device';
+      if (u.includes('acer'))                                   return 'Acer Laptop';
+      if (u.includes('asus') || u.includes('asustek'))         return 'ASUS Laptop';
+      if (u.includes('lenovo'))                                 return 'Lenovo Laptop';
+      if (u.includes('hewlett') || u.includes('hp-'))          return 'HP Laptop';
+      if (u.includes('dell'))                                   return 'Dell Laptop';
+      if (u.includes('toshiba'))                                return 'Toshiba Laptop';
+      if (u.includes('sony') || u.includes('vaio'))            return 'Sony Laptop';
+      if (u.includes('msi'))                                    return 'MSI Laptop';
+      if (u.includes('razer'))                                  return 'Razer Laptop';
+      if (u.includes('surface'))                                return 'Microsoft Surface';
+      return 'Windows PC';
     }
 
     // ── Mac ──
-    if (u.includes('macintosh') || u.includes('mac os x')) {
-      if (u.includes('ipad'))                                    return 'iPad';
-      return 'MacBook / iMac';
-    }
+    if (u.includes('macintosh') || u.includes('mac os x'))     return 'MacBook / iMac';
 
     // ── Linux ──
-    if (u.includes('linux'))                                     return 'Linux PC';
+    if (u.includes('linux'))                                    return 'Linux PC';
 
     // ── Chrome OS ──
-    if (u.includes('cros'))                                      return 'Chromebook';
+    if (u.includes('cros'))                                     return 'Chromebook';
 
     return 'Unknown Device';
   }
@@ -2409,14 +2443,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function getDeviceIcon(ua) {
     if (!ua) return '🖥️';
     const u = ua.toLowerCase();
-    if (u.includes('iphone'))                                   return '📱';
-    if (u.includes('ipad'))                                     return '📱';
-    if (u.includes('android') && u.includes('mobile'))         return '📱';
-    if (u.includes('android'))                                  return '📱';
-    if (u.includes('macintosh') || u.includes('mac os x'))     return '💻';
-    if (u.includes('windows'))                                  return '💻';
-    if (u.includes('linux'))                                    return '🖥️';
-    if (u.includes('cros'))                                     return '💻';
+    if (u.includes('iphone'))                                    return '📱';
+    if (u.includes('ipad'))                                      return '📱';
+    if (u.includes('android') && u.includes('mobile'))          return '📱';
+    if (u.includes('android'))                                   return '📱';
+    if (u.includes('macintosh') || u.includes('mac os x'))      return '💻';
+    if (u.includes('windows'))                                   return '💻';
+    if (u.includes('linux'))                                     return '🖥️';
+    if (u.includes('cros'))                                      return '💻';
     return '🖥️';
   }
 
@@ -2480,7 +2514,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error("Security check failed:", e);
     }
-  }, 10000); // Check every 10 seconds
+  }, 5000); // Check every 5 seconds for fast revoke response
 
   // ─── FINANCING CLIENTS ──────────────────────────────────────────
   const drawFinancingTable = () => {
