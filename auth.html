@@ -71,9 +71,6 @@
           </div>
         </div>
 
-        <!-- Device Trust Status Badge -->
-        <div id="device-trust-badge" class="rounded-xl px-4 py-3 flex items-start gap-3 text-xs font-medium border"></div>
-
         <p id="error-msg" class="text-xs text-red-400 font-bold hidden text-center">Invalid credentials. Please check your username and password.</p>
 
         <button type="submit" id="login-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-colors mt-4 text-sm uppercase tracking-wider shadow-lg shadow-primary/20">Sign In</button>
@@ -144,31 +141,6 @@
     const loginBtn  = document.getElementById('login-btn');
     const verifyBtn = document.getElementById('verify-btn');
     const resendBtn = document.getElementById('resend-otp-btn');
-
-    // ─── Render Device Trust Badge on Login Form ───────────────────
-    (function renderBadge() {
-      const badge = document.getElementById('device-trust-badge');
-      if (!badge) return;
-      if (requireOTP) {
-        const remaining = logsRemaining;
-        badge.className = 'rounded-xl px-4 py-3 flex items-start gap-3 text-xs font-medium border bg-amber-500/10 border-amber-500/30';
-        badge.innerHTML = `
-          <span class="text-amber-400 text-base leading-none mt-0.5">🔐</span>
-          <div>
-            <p class="text-amber-300 font-bold uppercase tracking-wider mb-0.5">OTP Verification Required</p>
-            <p class="text-white/55">This device must verify with a code for the first ${OTP_REQUIRED_LOGINS} logins.
-            <strong class="text-white/80">${remaining} login${remaining !== 1 ? 's' : ''} remaining</strong> before this device is trusted.</p>
-          </div>`;
-      } else {
-        badge.className = 'rounded-xl px-4 py-3 flex items-start gap-3 text-xs font-medium border bg-green-500/10 border-green-500/30';
-        badge.innerHTML = `
-          <span class="text-green-400 text-base leading-none mt-0.5">✅</span>
-          <div>
-            <p class="text-green-300 font-bold uppercase tracking-wider mb-0.5">Trusted Device</p>
-            <p class="text-white/55">This device has completed ${OTP_REQUIRED_LOGINS} verified logins. No OTP code required — password only.</p>
-          </div>`;
-      }
-    })();
 
     // ─── Send OTP Email ────────────────────────────────────────────
     async function sendLoginEmail(otp) {
