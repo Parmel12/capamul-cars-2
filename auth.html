@@ -282,10 +282,10 @@
       }, 3000);
     });
 
-    // ─── Already logged in? Redirect ──────────────────────────────
-    if (localStorage.getItem('admin_token') === 'capamul_admin_session') {
-      window.location.href = 'admin.html';
-    }
+    // ─── Always clear session on auth page load ────────────────
+    // This PREVENTS the auto-bypass where visiting auth.html while
+    // still having a stale token would skip the login entirely.
+    localStorage.removeItem('admin_token');
   </script>
 </body>
 </html>
