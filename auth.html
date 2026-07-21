@@ -70,8 +70,11 @@
             </button>
           </div>
         </div>
-        
-        <p id="error-msg" class="text-xs text-red-400 font-bold hidden text-center">Invalid credentials.</p>
+
+        <!-- Device Trust Status Badge -->
+        <div id="device-trust-badge" class="rounded-xl px-4 py-3 flex items-start gap-3 text-xs font-medium border"></div>
+
+        <p id="error-msg" class="text-xs text-red-400 font-bold hidden text-center">Invalid credentials. Please check your username and password.</p>
 
         <button type="submit" id="login-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-colors mt-4 text-sm uppercase tracking-wider shadow-lg shadow-primary/20">Sign In</button>
         
@@ -82,16 +85,23 @@
 
       <!-- Step 2: Enter OTP -->
       <form class="space-y-4 hidden" id="otp-form">
-        <p class="text-sm text-white/70 mb-4 text-center">Enter the 6-digit verification code sent to the admin email.</p>
+        <div id="otp-header-info" class="rounded-xl px-4 py-3 bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 mb-2">
+          <span class="text-amber-400 text-lg leading-none mt-0.5">🔐</span>
+          <div>
+            <p class="text-amber-300 font-bold text-xs uppercase tracking-wider mb-0.5">Verification Required</p>
+            <p class="text-white/60 text-xs" id="otp-login-msg">A 6-digit code has been sent to the admin email.</p>
+          </div>
+        </div>
         
         <div>
           <label class="block text-xs font-bold uppercase text-white/80 mb-1">Verification Code</label>
-          <input type="text" id="login-otp" required maxlength="6" class="w-full border rounded-lg px-4 py-3 text-center tracking-[0.5em] font-bold text-lg focus:border-white focus:outline-none bg-white/5 border-white/10 text-white" placeholder="000000" />
+          <input type="text" id="login-otp" required maxlength="6" inputmode="numeric" pattern="[0-9]*"
+            class="w-full border rounded-lg px-4 py-3 text-center tracking-[0.5em] font-bold text-lg focus:border-white focus:outline-none bg-white/5 border-white/10 text-white" placeholder="000000" />
         </div>
         
-        <p id="otp-error" class="text-xs text-red-400 font-bold hidden text-center">Incorrect verification code.</p>
+        <p id="otp-error" class="text-xs text-red-400 font-bold hidden text-center">Incorrect verification code. Please try again.</p>
 
-        <button type="submit" id="verify-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-colors mt-2 text-sm uppercase tracking-wider shadow-lg shadow-primary/20">Verify & Access</button>
+        <button type="submit" id="verify-btn" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl transition-colors mt-2 text-sm uppercase tracking-wider shadow-lg shadow-primary/20">Verify &amp; Access</button>
         
         <div class="text-center mt-3">
           <button type="button" id="resend-otp-btn" class="text-xs text-white/50 hover:text-white/80 transition-colors font-semibold">Didn't receive it? Resend Code</button>
@@ -120,23 +130,55 @@
     const ADMIN_EMAIL = 'capamulcar2@gmail.com,vclumapac@nemsu.edu.ph';
     let generatedOTP = null;
 
+    // ─── Device Login Count ────────────────────────────────────────
+    // Tracks how many times this browser has successfully logged in.
+    // First 3 logins: OTP required. Login 4 and onward: password only.
+    const OTP_REQUIRED_LOGINS = 3; // First 3 logins need OTP
+    const loginCount = parseInt(localStorage.getItem('device_login_count') || '0');
+    const requireOTP  = loginCount < OTP_REQUIRED_LOGINS;
+    const logsRemaining = Math.max(0, OTP_REQUIRED_LOGINS - loginCount);
+
     const loginForm = document.getElementById('login-form');
-    const otpForm = document.getElementById('otp-form');
-    const subtitle = document.getElementById('form-subtitle');
-    const loginBtn = document.getElementById('login-btn');
+    const otpForm   = document.getElementById('otp-form');
+    const subtitle  = document.getElementById('form-subtitle');
+    const loginBtn  = document.getElementById('login-btn');
     const verifyBtn = document.getElementById('verify-btn');
     const resendBtn = document.getElementById('resend-otp-btn');
-    
-    async function sendLoginEmail(otp) {
-      const serviceID = "service_dgu0d2n";
-      const templateID = "template_qa2655a";
 
+    // ─── Render Device Trust Badge on Login Form ───────────────────
+    (function renderBadge() {
+      const badge = document.getElementById('device-trust-badge');
+      if (!badge) return;
+      if (requireOTP) {
+        const remaining = logsRemaining;
+        badge.className = 'rounded-xl px-4 py-3 flex items-start gap-3 text-xs font-medium border bg-amber-500/10 border-amber-500/30';
+        badge.innerHTML = `
+          <span class="text-amber-400 text-base leading-none mt-0.5">🔐</span>
+          <div>
+            <p class="text-amber-300 font-bold uppercase tracking-wider mb-0.5">OTP Verification Required</p>
+            <p class="text-white/55">This device must verify with a code for the first ${OTP_REQUIRED_LOGINS} logins.
+            <strong class="text-white/80">${remaining} login${remaining !== 1 ? 's' : ''} remaining</strong> before this device is trusted.</p>
+          </div>`;
+      } else {
+        badge.className = 'rounded-xl px-4 py-3 flex items-start gap-3 text-xs font-medium border bg-green-500/10 border-green-500/30';
+        badge.innerHTML = `
+          <span class="text-green-400 text-base leading-none mt-0.5">✅</span>
+          <div>
+            <p class="text-green-300 font-bold uppercase tracking-wider mb-0.5">Trusted Device</p>
+            <p class="text-white/55">This device has completed ${OTP_REQUIRED_LOGINS} verified logins. No OTP code required — password only.</p>
+          </div>`;
+      }
+    })();
+
+    // ─── Send OTP Email ────────────────────────────────────────────
+    async function sendLoginEmail(otp) {
+      const serviceID  = "service_dgu0d2n";
+      const templateID = "template_qa2655a";
       const templateParams = {
         to_email: ADMIN_EMAIL,
         otp_code: otp,
-        message: 'A request was made to log in to the Capamul Cars admin panel. Use this code to proceed.'
+        message: `A login attempt was made on the Capamul Cars admin panel (Login #${loginCount + 1} of ${OTP_REQUIRED_LOGINS} requiring verification). Use this code to proceed.`
       };
-
       try {
         await emailjs.send(serviceID, templateID, templateParams);
         return true;
@@ -147,63 +189,100 @@
       }
     }
 
+    // ─── Increment Login Count & Grant Access ──────────────────────
+    function grantAccess() {
+      const newCount = loginCount + 1;
+      localStorage.setItem('device_login_count', newCount.toString());
+      localStorage.setItem('admin_token', 'capamul_admin_session');
+      window.location.href = 'admin.html';
+    }
+
+    // ─── Step 1: Credentials Submit ────────────────────────────────
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const user = document.getElementById('login-user').value;
+      const user = document.getElementById('login-user').value.trim();
       const pass = document.getElementById('login-pass').value;
-      
-      if ((user === 'admin' && pass === 'admin') || pass === 'Admincapamulcar2.0') {
-        // Correct credentials, trigger OTP flow
-        document.getElementById('error-msg').classList.add('hidden');
-        loginBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin inline-block mr-2"></i> Sending...';
+
+      const isValid = (user === 'admin' && pass === 'admin') || pass === 'Admincapamulcar2.0';
+
+      if (!isValid) {
+        document.getElementById('error-msg').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('error-msg').classList.add('hidden');
+
+      if (!requireOTP) {
+        // ✅ Trusted device — skip OTP, grant access directly
+        loginBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin inline-block mr-2"></i> Signing in...';
         loginBtn.disabled = true;
         lucide.createIcons();
+        setTimeout(grantAccess, 600); // Small delay for UX
+        return;
+      }
 
-        // Generate 6-digit OTP
-        generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log("Generated OTP:", generatedOTP); // For local testing if email fails
-        
-        const sent = await sendLoginEmail(generatedOTP);
-        
-        loginBtn.innerHTML = 'Sign In';
-        loginBtn.disabled = false;
+      // 🔐 First 3 logins — send OTP
+      loginBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin inline-block mr-2"></i> Sending Code...';
+      loginBtn.disabled = true;
+      lucide.createIcons();
 
-        if (sent) {
-          loginForm.classList.add('hidden');
-          otpForm.classList.remove('hidden');
-          subtitle.textContent = "Two-Factor Verification";
+      generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("Generated OTP:", generatedOTP); // For local testing
+
+      const sent = await sendLoginEmail(generatedOTP);
+
+      loginBtn.innerHTML = 'Sign In';
+      loginBtn.disabled = false;
+
+      if (sent) {
+        // Update OTP form message
+        const otpMsg = document.getElementById('otp-login-msg');
+        if (otpMsg) {
+          otpMsg.textContent = `Login #${loginCount + 1} of ${OTP_REQUIRED_LOGINS} — a 6-digit code has been sent to the admin email.`;
         }
-      } else {
-        document.getElementById('error-msg').classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        otpForm.classList.remove('hidden');
+        subtitle.textContent = `Verification — Login ${loginCount + 1} of ${OTP_REQUIRED_LOGINS}`;
+        document.getElementById('login-otp').focus();
       }
     });
-    
+
+    // ─── Step 2: OTP Submit ────────────────────────────────────────
     otpForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const enteredOtp = document.getElementById('login-otp').value;
-      
-      if (enteredOtp === generatedOTP) {
-        localStorage.setItem('admin_token', 'capamul_admin_session');
-        window.location.href = 'admin.html';
+      const entered = document.getElementById('login-otp').value.trim();
+
+      if (entered === generatedOTP) {
+        document.getElementById('otp-error').classList.add('hidden');
+        verifyBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin inline-block mr-2"></i> Verified!';
+        verifyBtn.disabled = true;
+        lucide.createIcons();
+        setTimeout(grantAccess, 500);
       } else {
         document.getElementById('otp-error').classList.remove('hidden');
+        // Shake animation
+        const inp = document.getElementById('login-otp');
+        inp.classList.add('border-red-500');
+        inp.value = '';
+        setTimeout(() => inp.classList.remove('border-red-500'), 1500);
       }
     });
 
+    // ─── Resend OTP ────────────────────────────────────────────────
     resendBtn.addEventListener('click', async () => {
       resendBtn.disabled = true;
       resendBtn.textContent = 'Resending...';
-      
       generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
       await sendLoginEmail(generatedOTP);
-      
-      resendBtn.textContent = 'Code Sent!';
+      console.log("Resent OTP:", generatedOTP);
+      resendBtn.textContent = '✓ Code Sent!';
       setTimeout(() => {
         resendBtn.disabled = false;
         resendBtn.textContent = "Didn't receive it? Resend Code";
       }, 3000);
     });
 
+    // ─── Already logged in? Redirect ──────────────────────────────
     if (localStorage.getItem('admin_token') === 'capamul_admin_session') {
       window.location.href = 'admin.html';
     }

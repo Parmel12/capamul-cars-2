@@ -2255,21 +2255,51 @@ document.addEventListener('DOMContentLoaded', () => {
       listEl.innerHTML = devices.map(d => {
         const isCurrent = d.id === currentDeviceId;
         const dateStr = new Date(d.addedAt).toLocaleString();
+        const deviceLabel = getDeviceLabel(d.userAgent);
+        const browserName = getBrowserName(d.userAgent);
+        const osName = getOSName(d.userAgent);
+        const deviceIcon = getDeviceIcon(d.userAgent);
+        const customName = d.customName || '';
         
         return `
-          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-            <div class="min-w-0 pr-3">
-              <div class="flex items-center gap-2">
-                <p class="text-xs font-bold text-gray-900 truncate" title="${d.userAgent}">${getBrowserName(d.userAgent)}</p>
-                ${isCurrent ? '<span class="bg-green-100 text-green-700 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">Current Device</span>' : ''}
+          <div class="flex items-start justify-between p-3.5 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors gap-3" id="device-row-${d.id}">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+              <div class="h-10 w-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-xl shrink-0 shadow-sm">
+                ${deviceIcon}
               </div>
-              <p class="text-[10px] text-gray-500 mt-0.5">Added: ${dateStr}</p>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm font-bold text-gray-900">${customName || deviceLabel}</p>
+                  ${isCurrent ? '<span class="bg-green-100 text-green-700 text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider">● Current</span>' : ''}
+                </div>
+                <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  <span class="text-[10px] text-gray-500 bg-white border border-gray-200 px-1.5 py-0.5 rounded font-medium">${osName}</span>
+                  <span class="text-gray-300 text-[10px]">·</span>
+                  <span class="text-[10px] text-gray-500">${browserName}</span>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-1">Added: ${dateStr}</p>
+                <!-- Inline rename -->
+                <div class="mt-2 hidden" id="rename-row-${d.id}">
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" id="rename-input-${d.id}" value="${customName || deviceLabel}"
+                      placeholder="e.g. Acer Laptop, Lenovo PC…"
+                      class="flex-1 border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-primary" />
+                    <button onclick="window.saveDeviceName('${d.id}')" class="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-lg hover:opacity-90">Save</button>
+                    <button onclick="window.cancelRename('${d.id}')" class="text-gray-400 hover:text-gray-600 text-xs px-1.5 py-1 rounded-lg hover:bg-gray-100">✕</button>
+                  </div>
+                </div>
+              </div>
             </div>
-            ${!isCurrent ? `
-              <button onclick="window.revokeDevice('${d.id}')" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors shrink-0" title="Revoke Access">
-                <i data-lucide="trash-2" class="h-4 w-4"></i>
+            <div class="flex items-center gap-1 shrink-0">
+              <button onclick="window.startRename('${d.id}', '${(customName || deviceLabel).replace(/'/g, '\\&apos;')}')" class="text-gray-400 hover:text-blue-500 hover:bg-blue-50 p-1.5 rounded-lg transition-colors" title="Rename Device">
+                <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
               </button>
-            ` : ''}
+              ${!isCurrent ? `
+                <button onclick="window.revokeDevice('${d.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Revoke Access">
+                  <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                </button>
+              ` : ''}
+            </div>
           </div>
         `;
       }).join('');
@@ -2281,14 +2311,144 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  function getBrowserName(userAgent) {
-    if (!userAgent) return "Unknown Browser";
-    if (userAgent.includes("Edg")) return "Microsoft Edge";
-    if (userAgent.includes("Chrome")) return "Google Chrome";
-    if (userAgent.includes("Firefox")) return "Mozilla Firefox";
-    if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) return "Apple Safari";
-    return "Generic Browser";
+  // ── Device label helpers ──────────────────────────────────────
+  function getDeviceLabel(ua) {
+    if (!ua) return 'Unknown Device';
+    const u = ua.toLowerCase();
+
+    // ── Mobile brands (check before generic phone) ──
+    if (u.includes('iphone'))                                    return 'iPhone';
+    if (u.includes('ipad'))                                      return 'iPad';
+    if (u.includes('samsung') && u.includes('mobile'))          return 'Samsung Phone';
+    if (u.includes('samsung'))                                   return 'Samsung Device';
+    if (u.includes('huawei') && u.includes('mobile'))           return 'Huawei Phone';
+    if (u.includes('huawei'))                                    return 'Huawei Device';
+    if (u.includes('xiaomi') && u.includes('mobile'))           return 'Xiaomi Phone';
+    if (u.includes('xiaomi'))                                    return 'Xiaomi Device';
+    if (u.includes('oppo') && u.includes('mobile'))             return 'OPPO Phone';
+    if (u.includes('vivo') && u.includes('mobile'))             return 'Vivo Phone';
+    if (u.includes('realme') && u.includes('mobile'))           return 'Realme Phone';
+    if (u.includes('android') && u.includes('mobile'))          return 'Android Phone';
+    if (u.includes('android'))                                   return 'Android Tablet';
+
+    // ── Windows laptop/desktop brands ──
+    if (u.includes('windows')) {
+      // Try to detect brand from common OEM strings
+      if (u.includes('acer'))                                    return 'Acer Laptop';
+      if (u.includes('asus') || u.includes('asustek'))          return 'ASUS Laptop';
+      if (u.includes('lenovo'))                                  return 'Lenovo Laptop';
+      if (u.includes('hewlett') || u.includes('hp-'))           return 'HP Laptop';
+      if (u.includes('dell'))                                    return 'Dell Laptop';
+      if (u.includes('toshiba'))                                 return 'Toshiba Laptop';
+      if (u.includes('sony') || u.includes('vaio'))             return 'Sony Laptop';
+      if (u.includes('msi'))                                     return 'MSI Laptop';
+      if (u.includes('razer'))                                   return 'Razer Laptop';
+      if (u.includes('surface'))                                 return 'Microsoft Surface';
+      // Windows without brand — guess laptop vs desktop by common UA hints
+      if (u.includes('wow64') || u.includes('win64') || u.includes('win32')) {
+        return 'Windows PC';
+      }
+      return 'Windows Device';
+    }
+
+    // ── Mac ──
+    if (u.includes('macintosh') || u.includes('mac os x')) {
+      if (u.includes('ipad'))                                    return 'iPad';
+      return 'MacBook / iMac';
+    }
+
+    // ── Linux ──
+    if (u.includes('linux'))                                     return 'Linux PC';
+
+    // ── Chrome OS ──
+    if (u.includes('cros'))                                      return 'Chromebook';
+
+    return 'Unknown Device';
   }
+
+  function getOSName(ua) {
+    if (!ua) return 'Unknown OS';
+    const u = ua.toLowerCase();
+    if (u.includes('iphone os') || u.includes('cpu iphone')) {
+      const m = ua.match(/OS (\d+_\d+)/);
+      return m ? `iOS ${m[1].replace('_', '.')}` : 'iOS';
+    }
+    if (u.includes('ipad')) {
+      const m = ua.match(/OS (\d+_\d+)/);
+      return m ? `iPadOS ${m[1].replace('_', '.')}` : 'iPadOS';
+    }
+    if (u.includes('android')) {
+      const m = ua.match(/Android (\d+\.?\d*)/);
+      return m ? `Android ${m[1]}` : 'Android';
+    }
+    if (u.includes('windows nt')) {
+      const versions = { '10.0': 'Windows 11/10', '6.3': 'Windows 8.1', '6.2': 'Windows 8', '6.1': 'Windows 7', '6.0': 'Vista' };
+      const m = ua.match(/Windows NT (\d+\.\d+)/);
+      return m ? (versions[m[1]] || `Windows NT ${m[1]}`) : 'Windows';
+    }
+    if (u.includes('mac os x')) {
+      const m = ua.match(/Mac OS X (\d+[_.]\d+)/);
+      return m ? `macOS ${m[1].replace('_', '.')}` : 'macOS';
+    }
+    if (u.includes('linux'))   return 'Linux';
+    if (u.includes('cros'))    return 'Chrome OS';
+    return 'Unknown OS';
+  }
+
+  function getBrowserName(ua) {
+    if (!ua) return 'Unknown Browser';
+    if (ua.includes('Edg'))                                     return 'Microsoft Edge';
+    if (ua.includes('OPR') || ua.includes('Opera'))            return 'Opera';
+    if (ua.includes('Chrome') && !ua.includes('Chromium'))     return 'Google Chrome';
+    if (ua.includes('Chromium'))                               return 'Chromium';
+    if (ua.includes('Firefox'))                                return 'Mozilla Firefox';
+    if (ua.includes('Safari') && !ua.includes('Chrome'))       return 'Apple Safari';
+    return 'Browser';
+  }
+
+  function getDeviceIcon(ua) {
+    if (!ua) return '🖥️';
+    const u = ua.toLowerCase();
+    if (u.includes('iphone'))                                   return '📱';
+    if (u.includes('ipad'))                                     return '📱';
+    if (u.includes('android') && u.includes('mobile'))         return '📱';
+    if (u.includes('android'))                                  return '📱';
+    if (u.includes('macintosh') || u.includes('mac os x'))     return '💻';
+    if (u.includes('windows'))                                  return '💻';
+    if (u.includes('linux'))                                    return '🖥️';
+    if (u.includes('cros'))                                     return '💻';
+    return '🖥️';
+  }
+
+  // ── Inline rename helpers ───────────────────────────────────
+  window.startRename = (id, currentName) => {
+    const row = document.getElementById(`rename-row-${id}`);
+    if (row) {
+      row.classList.remove('hidden');
+      const inp = document.getElementById(`rename-input-${id}`);
+      if (inp) { inp.value = currentName; inp.focus(); inp.select(); }
+    }
+  };
+
+  window.cancelRename = (id) => {
+    const row = document.getElementById(`rename-row-${id}`);
+    if (row) row.classList.add('hidden');
+  };
+
+  window.saveDeviceName = async (id) => {
+    const inp = document.getElementById(`rename-input-${id}`);
+    if (!inp) return;
+    const name = inp.value.trim();
+    try {
+      const devices = await window.api.getVerifiedDevices();
+      const updated = devices.map(d => d.id === id ? { ...d, customName: name } : d);
+      await window.api.updateVerifiedDevices(updated);
+      window.showToast(`Device renamed to "${name || 'default'}".`);
+      renderDevicesList();
+    } catch(e) {
+      alert('Failed to rename device.');
+    }
+  };
 
   window.revokeDevice = async (id) => {
     if (!confirm("Are you sure you want to revoke access for this device? It will be logged out immediately.")) return;
