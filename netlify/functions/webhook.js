@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwwgrhjpcfmdnhcbampu.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3d2dyaGpwY2ZtZG5oY2JhbXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MDQ3ODQsImV4cCI6MjA5OTM4MDc4NH0.kFQqZ-06V9T6UijLwNviyjF2m19mV8evqUT9humN074';
 const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || 'capamul_cars_messenger_verify_token_123';
+const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN || 'EAAUDql52rrUBSLtVf2UYEt7D0noi3iU1YpeCuYGSe0bPrcUyuRNVetPwBoPf4H0dctdIwvjCVX7lNtfZBtSKJcyqjq3oIdWJZA1KXhhdZBPQHLjUAaZCpXBPSYmT0SKOSVrsyAW7BIZCAuc3dIeX6mjkZBJGYPFLGKMk5wTTYlwiFHDcAcy1mPotWEHNgGbMYcroed7Sw8T4qcABnt4qfZAIZCK4NQCpOuTaTbLZC5CBbK0kZD';
 const GRAPH_API_URL = 'https://graph.facebook.com/v19.0/me/messages';
 
 const sbHeaders = {
@@ -138,16 +139,16 @@ INSTRUCTIONS:
 }
 
 async function sendTextMessage(recipientPsid, text) {
-  const pageToken = process.env.FB_PAGE_ACCESS_TOKEN;
-  if (!pageToken) {
+  if (!FB_PAGE_ACCESS_TOKEN) {
     console.log('[FB Messenger Token Missing]');
     return;
   }
   try {
-    await axios.post(`${GRAPH_API_URL}?access_token=${pageToken}`, {
+    const res = await axios.post(`${GRAPH_API_URL}?access_token=${FB_PAGE_ACCESS_TOKEN}`, {
       recipient: { id: recipientPsid },
       message: { text: text }
     });
+    console.log('FB Message Send Result:', res.data);
   } catch (err) {
     console.error('FB Send Message Error:', err.response?.data || err.message);
   }
