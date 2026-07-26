@@ -1,15 +1,25 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 const GRAPH_API_URL = 'https://graph.facebook.com/v19.0/me/messages';
+
+function getToken() {
+  return process.env.FB_PAGE_ACCESS_TOKEN;
+}
 
 /**
  * Send text message back to customer on Facebook Messenger
  */
 export async function sendTextMessage(recipientPsid, text) {
-  if (!FB_PAGE_ACCESS_TOKEN) {
+  const token = getToken();
+
+  if (!token) {
     console.log(`[Messenger Mock Send to ${recipientPsid}]:\n${text}`);
     return;
   }
@@ -21,11 +31,12 @@ export async function sendTextMessage(recipientPsid, text) {
     };
 
     const response = await axios.post(
-      `${GRAPH_API_URL}?access_token=${FB_PAGE_ACCESS_TOKEN}`,
+      `${GRAPH_API_URL}?access_token=${token}`,
       payload,
       { headers: { 'Content-Type': 'application/json' } }
     );
 
+    console.log(`[Messenger API Success] Replied to PSID ${recipientPsid}: ${response.data?.message_id}`);
     return response.data;
   } catch (err) {
     console.error('[Messenger API Error]:', err.response?.data || err.message);
@@ -36,7 +47,9 @@ export async function sendTextMessage(recipientPsid, text) {
  * Send Quick Reply buttons (e.g. Call Us, Browse Web)
  */
 export async function sendQuickReplies(recipientPsid, text, quickReplies) {
-  if (!FB_PAGE_ACCESS_TOKEN) {
+  const token = getToken();
+
+  if (!token) {
     console.log(`[Messenger Quick Replies to ${recipientPsid}]: ${text}`);
     return;
   }
@@ -55,7 +68,7 @@ export async function sendQuickReplies(recipientPsid, text, quickReplies) {
     };
 
     await axios.post(
-      `${GRAPH_API_URL}?access_token=${FB_PAGE_ACCESS_TOKEN}`,
+      `${GRAPH_API_URL}?access_token=${token}`,
       payload,
       { headers: { 'Content-Type': 'application/json' } }
     );
