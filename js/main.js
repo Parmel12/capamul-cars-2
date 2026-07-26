@@ -235,7 +235,7 @@ async function loadCarsList() {
   const container = document.getElementById('cars-list-items');
   if (!container) return;
 
-  container.innerHTML = '<div class="text-center py-10"><i data-lucide="loader-2" class="h-8 w-8 animate-spin mx-auto text-primary"></i><p class="mt-2 text-gray-500">Loading vehicles...</p></div>';
+  container.innerHTML = '<div class="text-center py-10 flex justify-center"><div class="loader"></div></div>';
   if(window.lucide) window.lucide.createIcons();
 
   try {
@@ -263,7 +263,7 @@ async function loadFeaturedCars() {
   const container = document.getElementById('featured-cars-grid');
   if (!container) return;
 
-  container.innerHTML = '<div class="py-12 text-center text-gray-400 w-full"><i data-lucide="loader-2" class="h-8 w-8 animate-spin mx-auto mb-2"></i><p class="text-sm">Loading...</p></div>';
+  container.innerHTML = '<div class="py-12 text-center text-gray-400 w-full flex justify-center"><div class="loader"></div></div>';
   if (window.lucide) window.lucide.createIcons();
 
   try {

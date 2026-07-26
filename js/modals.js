@@ -79,7 +79,7 @@ window.openCarDetail = async function(carId) {
   const loadingOverlay = document.createElement('div');
   loadingOverlay.className = 'modal-overlay';
   loadingOverlay.id = 'global-modal';
-  loadingOverlay.innerHTML = '<div class="modal-content" style="display:flex;align-items:center;justify-content:center;min-height:200px"><div style="text-align:center;color:#6b7280"><div style="width:40px;height:40px;border:4px solid #dc2626;border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 12px"></div>Loading...</div></div>';
+  loadingOverlay.innerHTML = '<div class="modal-content" style="display:flex;align-items:center;justify-content:center;min-height:200px"><div class="loader"></div></div>';
   document.body.appendChild(loadingOverlay);
   document.body.style.overflow = 'hidden';
   loadingOverlay.addEventListener('click', e => { if (e.target === loadingOverlay) closeModal(); });

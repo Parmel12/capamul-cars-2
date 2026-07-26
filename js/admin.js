@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridBody = document.getElementById('inventory-grid-body');
     if (!gridBody) return;
 
-    gridBody.innerHTML = '<div class="col-span-full py-12 text-center text-gray-500"><i data-lucide="loader-2" class="h-8 w-8 animate-spin mx-auto mb-3"></i><p>Loading inventory...</p></div>';
+    gridBody.innerHTML = '<div class="col-span-full py-12 flex justify-center"><div class="loader"></div></div>';
     if (window.lucide) window.lucide.createIcons();
     if (!window.api) return;
 
@@ -3569,11 +3569,53 @@ document.addEventListener('DOMContentLoaded', () => {
   const initAll = () => {
     // Only render the default active view on load to prevent database overload
     renderInventory();
+    if (typeof window.loadAISettings === 'function') window.loadAISettings();
     
     // Wait for a split second before fetching dashboard stats
     setTimeout(() => {
       if (typeof renderDashboard === 'function') renderDashboard();
     }, 500);
+  };
+
+  window.loadAISettings = async () => {
+    try {
+      const toggle = document.getElementById('settings-ai-toggle');
+      const badge = document.getElementById('ai-status-badge');
+      if (!toggle || !badge) return;
+
+      const settings = await window.api.getAISettings();
+      const isEnabled = settings.enabled !== false;
+      toggle.checked = isEnabled;
+      if (isEnabled) {
+        badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200';
+        badge.innerHTML = '🟢 AI ON';
+      } else {
+        badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200';
+        badge.innerHTML = '🔴 AI PAUSED (OFF)';
+      }
+    } catch (e) {
+      console.error('Failed to load AI settings:', e);
+    }
+  };
+
+  window.toggleAISettings = async (enabled) => {
+    try {
+      const badge = document.getElementById('ai-status-badge');
+      if (badge) {
+        if (enabled) {
+          badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200';
+          badge.innerHTML = '🟢 AI ON';
+        } else {
+          badge.className = 'px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200';
+          badge.innerHTML = '🔴 AI PAUSED (OFF)';
+        }
+      }
+
+      await window.api.updateAISettings({ enabled: !!enabled, mode: 'ai' });
+    } catch (e) {
+      console.error('Failed to toggle AI settings:', e);
+      alert('Failed to update AI Agent status.');
+    }
   };
 
   if (window.api) {

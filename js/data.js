@@ -434,6 +434,28 @@ const api = {
     }
   },
 
+  // ── AI Agent Settings ──────────────────────────────────────
+  async getAISettings() {
+    try {
+      const rows = await sb.get('settings', 'select=value&key=eq.ai_settings&limit=1');
+      return rows[0]?.value || { enabled: true, mode: 'ai' };
+    } catch (err) {
+      console.error('getAISettings:', err);
+      return { enabled: true, mode: 'ai' };
+    }
+  },
+
+  async updateAISettings(data) {
+    try {
+      this._requireAdmin();
+      await sb.upsert('settings', { key: 'ai_settings', value: data });
+      return { success: true };
+    } catch (err) {
+      console.error('updateAISettings:', err);
+      return { success: false, error: err };
+    }
+  },
+
   async getVerifiedDevices() {
     try {
       const rows = await sb.get('settings', 'select=value&key=eq.devices&limit=1');
