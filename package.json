@@ -1,0 +1,13 @@
+{
+  "name": "capamul-cars-2",
+  "version": "2.0.0",
+  "description": "Capamul Cars 2.0 Web Application with Netlify AI Messenger Webhook Serverless Function",
+  "scripts": {
+    "build": "echo 'Static site ready'"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "axios": "^1.7.0"
+  }
+}
