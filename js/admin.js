@@ -805,8 +805,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await window.api.updateReservationStatus(id, status, carId);
       if (!res.success) throw new Error(res.error?.message);
 
-      // Send email notification for Approve/Decline/Completed
-      if ((status === 'Approved' || status === 'Declined' || status === 'Completed') && email) {
+      // Send email notification for Approve/Decline/Completed (only if customer emails are enabled)
+      const customerEmailEnabled = await window.api.getSettingsData().then(s => s?.customer_email !== false).catch(() => true);
+      if ((status === 'Approved' || status === 'Declined' || status === 'Completed') && email && customerEmailEnabled) {
         try {
           const isApproved = status === 'Approved';
           const isCompleted = status === 'Completed';
@@ -1228,8 +1229,9 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>`;
 
-          // Send to Customer
-          if (resData.customerEmail) {
+          // Send to Customer (only if customer emails are enabled)
+          const custEmailOn = await window.api.getSettingsData().then(s => s?.customer_email !== false).catch(() => true);
+          if (resData.customerEmail && custEmailOn) {
             await fetch('https://api.emailjs.com/api/v1.0/email/send', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -2132,6 +2134,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el('settings-notif-lead'))  el('settings-notif-lead').checked  = !!data.notifications.leads;
     }
     
+    if (data.customer_email !== undefined) {
+      const toggle = el('settings-customer-email-enabled');
+      if (toggle) {
+        toggle.checked = data.customer_email !== false;
+        const statusBadge = document.getElementById('email-toggle-status');
+        if (statusBadge) statusBadge.classList.toggle('hidden', toggle.checked);
+      }
+    }
+    // Bind live toggle status badge update
+    const toggle = el('settings-customer-email-enabled');
+    if (toggle) {
+      toggle.addEventListener('change', () => {
+        const badge = document.getElementById('email-toggle-status');
+        if (badge) badge.classList.toggle('hidden', toggle.checked);
+      });
+    }
+    
     if (typeof renderDevicesList === 'function') renderDevicesList();
   };
 
@@ -2151,8 +2170,8 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     } else if (section === 'security') {
       data.security = { timeout: el('settings-sec-timeout').value, twoFactor: el('settings-sec-2fa').checked };
-    } else if (section === 'notifications') {
-      data.notifications = { email: el('settings-notif-email').checked, reservations: el('settings-notif-res').checked, leads: el('settings-notif-lead').checked };
+    } else if (section === 'customer_email') {
+      data.customer_email = el('settings-customer-email-enabled').checked;
     }
     
     const btn = event && event.target ? event.target : null;
@@ -2210,7 +2229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sent = await sendPasswordChangeOTP(generatedPasswordOTP);
     
     if (sent) {
-      document.getElementById('otp-password-modal').classList.remove('hidden');
+      document.getElementById('otp-password-modal').style.display = 'flex';
     }
     
     if (btn) {
@@ -2227,7 +2246,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (entered === generatedPasswordOTP) {
         localStorage.setItem('admin_password', pendingNewPassword);
         alert('Password has been successfully updated!');
-        document.getElementById('otp-password-modal').classList.add('hidden');
+        document.getElementById('otp-password-modal').style.display = 'none';
         document.getElementById('settings-new-password').value = '';
         generatedPasswordOTP = null;
         pendingNewPassword = null;

@@ -1214,39 +1214,28 @@
               </div>
             </div>
 
-            <!-- Notifications -->
+            <!-- Customer Email Notifications -->
             <div class="bg-white rounded-xl border border-black/10 shadow-sm p-6">
-              <h3 class="font-bold text-gray-900 mb-4">Notifications</h3>
+              <h3 class="font-bold text-gray-900 mb-1">Customer Email Notifications</h3>
+              <p class="text-xs text-gray-400 mb-4">Control whether confirmation and status emails are automatically sent to customers.</p>
               <div class="space-y-4 mb-6">
                 <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-700">Email Alerts</span>
+                  <div>
+                    <span class="text-sm font-semibold text-gray-700">Send Emails to Customers</span>
+                    <p class="text-xs text-gray-400 mt-0.5">Reservation confirmations, approvals, and status updates</p>
+                  </div>
                   <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="settings-notif-email" class="sr-only peer">
-                    <div
-                      class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
-                    </div>
-                  </label>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-700">Reservation Alerts</span>
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="settings-notif-res" class="sr-only peer">
-                    <div
-                      class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
-                    </div>
-                  </label>
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-700">Lead Alerts</span>
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="settings-notif-lead" class="sr-only peer">
-                    <div
-                      class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
-                    </div>
+                    <input type="checkbox" id="settings-customer-email-enabled" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
               </div>
-              <button onclick="window.saveSettingsSection('notifications')"
+              <div id="email-toggle-status" class="text-xs text-gray-400 mb-4 hidden">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-semibold">
+                  <i data-lucide="mail-x" class="h-3 w-3"></i> Customer emails are currently OFF
+                </span>
+              </div>
+              <button onclick="window.saveSettingsSection('customer_email')"
                 class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90">Save</button>
             </div>
 
@@ -1960,9 +1949,9 @@
   </div>
 
   <!-- OTP Verification Modal for Password Update -->
-  <div id="otp-password-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+  <div id="otp-password-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" style="display:none;">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 relative animate-fade-in text-center">
-      <button onclick="document.getElementById('otp-password-modal').classList.add('hidden')"
+      <button onclick="document.getElementById('otp-password-modal').style.display='none'"
         class="absolute top-4 right-4 text-gray-400 hover:text-black">
         <i data-lucide="x" class="h-5 w-5"></i>
       </button>
@@ -1981,12 +1970,12 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function () {
-      emailjs.init("Ls6nxCsZLKr8XfmOA");
+      emailjs.init("8bYgrl4zv7OqxBU8a");
     })();
   </script>
 
   <script>lucide.createIcons();</script>
-  <script type="module" src="js/data.js"></script>
+  <script src="js/data.js"></script>
   <script src="js/admin.js"></script>
 </body>
 

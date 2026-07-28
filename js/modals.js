@@ -804,6 +804,11 @@ window.openReserveDialog = async function(carId) {
   </div>
 </div>`;
 
+          // Check if customer emails are enabled in settings before sending
+          const custEmailSetting = await window.api.getSettingsData().catch(() => null);
+          const sendToCustomer = custEmailSetting?.customer_email !== false;
+
+          if (sendToCustomer) {
             await fetch('https://api.emailjs.com/api/v1.0/email/send', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -819,6 +824,10 @@ window.openReserveDialog = async function(carId) {
               })
             });
             console.log("Confirmation email sent to customer.");
+          } else {
+            console.log("Customer email skipped (disabled in settings).");
+          }
+
 
             // Also send an alert email to the admin
             const adminHtml = `

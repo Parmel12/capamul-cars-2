@@ -314,17 +314,6 @@ const api = {
     }
   },
 
-  async deleteReservation(id) {
-    try {
-      this._requireAdmin();
-      await sb.delete('reservations', id);
-      return { success: true };
-    } catch (err) {
-      console.error('deleteReservation:', err);
-      return { success: false, error: err };
-    }
-  },
-
   // ── Leads ───────────────────────────────────────────────────
   async submitLead(data) {
     try {
