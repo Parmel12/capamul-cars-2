@@ -165,6 +165,9 @@ function matchCarsByModel(userMessage, cars) {
     }
     return { car, score };
   });
+  return scored.filter(s => s.score >= 2).sort((a, b) => b.score - a.score).map(s => s.car);
+}
+
 function formatCarsFallback(matchedCars, userName) {
   const greeting = userName ? `Hello ${userName}! 👋` : `Hello! 👋`;
   const list = matchedCars.slice(0, 4).map(c => 
