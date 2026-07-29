@@ -363,33 +363,7 @@ May I know:
 • Cash or financing?
 • Sedan, SUV, Pickup, Van, or Hatchback?
 • Manual or Automatic?
-Based on your preferences, I'll recommend the most suitable vehicles."
-
-IF CUSTOMER SAYS THANK YOU
-"You're very welcome!
-Thank you for choosing CAPAMUL CARS 2.0.
-If you have any more questions about our vehicles, financing, or reservations, feel free to message us anytime.
-Have a wonderful day!"
-
-IF CUSTOMER ASKS SOMETHING UNKNOWN
-"That's a great question.
-I'd like to provide you with the most accurate information.
-Allow me to forward your inquiry to one of our sales representatives, who will get back to you as soon as possible.
-Thank you for your patience."
-
-EMOJIS
-Use only a few professional emojis. Examples: 👋 🚗 📍 📞 ✅
-Avoid excessive emojis.
-
-NEVER DO THESE
-Never sound robotic.
-Never repeat the same paragraph.
-Never send unnecessary long messages.
-Never overwhelm the customer with a list of vehicles unless they ask.
-Never make up prices.
-Never make up financing information.
-Never promise approval.
-Never pressure customers into buying.
+Your personality should be: Friendly, Professional, Polite, Patient, Helpful, Natural, Human-like.
 
 GREETING & BRAND RESPONSE RULES:
 1. GREETING: State the business name: "Welcome to CAPAMUL CARS 2.0! 👋". NEVER repeat the greeting ("Good day" or "Welcome") in follow-up messages during the same chat. Keep responses clean and professional.
@@ -403,50 +377,59 @@ INVENTORY MATCHING RULES:
 3. If a customer asks for a specific model (such as Wigo, Xpander, Montero, Mirage, Vios, Fortuner), list the matching available units from the LIVE INVENTORY.
 4. Only say an item, brand, or model is out of stock if ZERO cars in the LIVE INVENTORY match that brand or model.
 
+CAR DETAILS FORMATTING
+When providing details or pricing for a specific car, ALWAYS use this exact high-energy marketing format and emojis. Use the actual data from the LIVE INVENTORY. Do NOT use asterisks (*):
+
+🔥[Year] [Make/Model]🔥
+💰[Down Payment] DOWNPAYMENT ONLY💰
+💰[Total Price] ONLY IF CASH, NEGOTIABLE💰
+OPEN FOR LOW DP
+(SUBJECT FOR APPROVAL)
+➡️[Make] [Model]
+➡️[Year] YEAR MODEL
+➡️[Transmission] TRANSMISSION
+➡️[Mileage] ORIGINAL ODO
+➡️STATUS: [Available/Sold]
+➡️NO ISSUES
+
+📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur
+📞 Tawag/Text: 09109025461 / 09686995654
+Gusto ba ka mag-schedule og test drive o magpa-reserve?
+
 DETECTED INTENT: ${intent}
 CUSTOMER NAME: ${userName || 'Not available'}
 LIVE INVENTORY:
 ${inventoryList}
 `;
 
-    // Calculate dynamic greeting if intent is greeting
-    // Removed aiStart logic to prevent Gemini from getting stuck on the greeting
+    // 3.5s Hard Timeout Controller to ensure Netlify functions never time out
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const endpoints = [
-      'v1beta/models/gemini-flash-latest',
-      'v1beta/models/gemini-2.0-flash'
-    ];
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply:` }] }],
+        generationConfig: { temperature: 0.3 }
+      })
+    });
 
-    for (const ep of endpoints) {
-      let attempts = 0;
-      while (attempts < 2) {
-        attempts++;
-        const res = await fetch(`https://generativelanguage.googleapis.com/${ep}:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply:` }] }],
-            generationConfig: { temperature: 0.3 }
-          })
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-          if (replyText) return replyText;
-        } else if (res.status === 429) {
-          console.warn(`[Gemini Rate Limit 429] Waiting 1.5s before retry...`);
-          await new Promise(r => setTimeout(r, 1500));
-        } else {
-          const errText = await res.text();
-          console.error(`[Gemini Error] ${ep} HTTP ${res.status}: ${errText.substring(0, 150)}`);
-          break; // Try next endpoint if not 429
-        }
-      }
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      if (replyText) return replyText;
     }
-    return null; // Fallback gracefully to smart engine instead of showing raw debug errors to customer
+    return null;
   } catch (err) {
-    console.error('[Gemini Exception]:', err.message);
+    if (err.name === 'AbortError') {
+      console.warn('[Gemini Timeout] Gemini API took >3.5s, switching instantly to fast database fallback.');
+    } else {
+      console.error('[Gemini Exception]:', err.message);
+    }
     return null;
   }
 }
@@ -462,33 +445,23 @@ async function generateAutoReply(userMessage, senderPsid) {
     return `That's a great question.\n\nI'd like to provide you with the most accurate information. Allow me to forward your inquiry to one of our sales representatives, who will get back to you as soon as possible.\n\nThank you for your patience.`;
   }
 
-  const cars     = await getAvailableCars();
+  // ── Parallel DB and Profile Fetch for Lightning Speed ──────────
+  const [cars, userName] = await Promise.all([
+    getAvailableCars(),
+    senderPsid ? getUserProfile(senderPsid) : Promise.resolve(null)
+  ]);
+
   const apiKey   = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '').trim();
   const intent   = detectIntent(userMessage);
-  const userName = senderPsid ? await getUserProfile(senderPsid) : null;
   const greeting = getTimeGreeting('english', userName);
+  const matched  = matchCarsByModel(userMessage, cars);
 
-  console.log(`[AI] msg="${userMessage}" | intent=${intent} | cars=${cars.length}`);
+  console.log(`[AI] msg="${userMessage}" | intent=${intent} | cars=${cars.length} | matched=${matched.length}`);
 
-  // ── Try Gemini AI first ───────────────────────────────────────
+  // ── Try Gemini AI with 3.5s Fast Timeout ───────────────────────
   if (apiKey) {
-    const matched = matchCarsByModel(userMessage, cars);
-    let carsForGemini = matched;
-
-    if (carsForGemini.length === 0) {
-      if (intent === 'cheapest') {
-        carsForGemini = [...cars].sort((a, b) => a.price - b.price).slice(0, 6);
-      } else if (intent === 'transmission') {
-        const isAuto = /\b(automatic|matic|a\/t)\b/i.test(userMessage.toLowerCase());
-        carsForGemini = cars.filter(c => isAuto
-          ? (c.transmission || '').toLowerCase().includes('auto')
-          : (c.transmission || '').toLowerCase().includes('manual')).slice(0, 6);
-      } else {
-        carsForGemini = cars.slice(0, 8);
-      }
-    } else {
-      carsForGemini = carsForGemini.slice(0, 8);
-    }
+    let carsForGemini = matched.length > 0 ? matched : cars;
+    carsForGemini = carsForGemini.slice(0, 6);
 
     const aiText = await callGeminiRestApi(apiKey, userMessage, carsForGemini, intent, userName);
     if (aiText) { 
