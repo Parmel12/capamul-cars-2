@@ -346,11 +346,11 @@ ${inventoryList}
     }
 
     const endpoints = [
-      'v1beta/models/gemini-1.5-flash',
-      'v1/models/gemini-1.5-flash',
-      'v1beta/models/gemini-1.5-flash-latest',
-      'v1beta/models/gemini-pro',
-      'v1/models/gemini-pro'
+      'v1beta/models/gemini-flash-latest',
+      'v1beta/models/gemini-2.5-flash',
+      'v1beta/models/gemini-pro-latest',
+      'v1/models/gemini-flash-latest',
+      'v1beta/models/gemini-1.5-flash'
     ];
 
     let lastError = 'DEBUG ERROR: No endpoints succeeded.';
