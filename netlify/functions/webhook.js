@@ -1,5 +1,7 @@
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwwgrhjpcfmdnhcbampu.supabase.co';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3d2dyaGpwY2ZtZG5oY2JhbXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MDQ3ODQsImV4cCI6MjA5OTM4MDc4NH0.kFQqZ-06V9T6UijLwNviyjF2m19mV8evqUT9humN074';
+const rawUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://uwwgrhjpcfmdnhcbampu.supabase.co';
+const SUPABASE_URL = rawUrl.trim().replace(/\/+$/, '');
+const rawKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3d2dyaGpwY2ZtZG5oY2JhbXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MDQ3ODQsImV4cCI6MjA5OTM4MDc4NH0.kFQqZ-06V9T6UijLwNviyjF2m19mV8evqUT9humN074';
+const SUPABASE_ANON_KEY = rawKey.trim();
 const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || 'capamul_cars_messenger_verify_token_123';
 const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN || 'EAATZAJmZCfZBowBSKUlkFvENI1NKKPw9m0Dmwt7blRW7JHAP0hRTEcjLOlw4rPjZA4KWwNkzXqwwrBrJSrczvlMmTIfX4sD4rf1QTLUKUDEzWF46ZAEW4wJNZCfYl20TOk8eIyC52P0YdsR5aPW24cH3ko2TnfvjskM8Td2rQj5lEPVImvPCDZB3d96LgFM0R343HpZBQQFh9wZDZD';
 const GRAPH_API_URL = 'https://graph.facebook.com/v19.0/me/messages';
@@ -14,11 +16,13 @@ const WEBSITE  = 'https://capamulcars2.netlify.app';
 const pausedUsers = new Map();
 const PAUSE_DURATION = 2 * 60 * 60 * 1000; // 2 hours
 
-const sbHeaders = {
-  'apikey': SUPABASE_ANON_KEY,
-  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  'Content-Type': 'application/json'
-};
+function getSbHeaders() {
+  return {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json'
+  };
+}
 
 function computeDp(price, explicitDp) {
   if (explicitDp && Number(explicitDp) > 0) return Number(explicitDp);
@@ -34,11 +38,14 @@ function formatPhp(amount) {
 
 async function getAvailableCars() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/cars?select=*&order=created_at.desc`, { headers: sbHeaders });
-    if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/cars?select=*&order=created_at.desc`, { headers: getSbHeaders() });
+    if (!res.ok) {
+      console.error(`[Supabase Error] HTTP ${res.status}:`, await res.text());
+      return [];
+    }
     const data = await res.json();
-    return (data || [])
-      .filter(c => ['available', 'reserved'].includes((c.status || '').toLowerCase()))
+    const filtered = (data || [])
+      .filter(c => ['available', 'reserved'].includes((c.status || '').toLowerCase().trim()))
       .map(c => ({
         id: c.id,
         name: c.name || `${c.year || ''} ${c.make || ''} ${c.model || ''}`.trim(),
@@ -53,8 +60,10 @@ async function getAvailableCars() {
         fuelType: c.fuel_type || 'Gasoline',
         bodyType: c.body_type || 'N/A'
       }));
+    console.log(`[Supabase Success] Fetched ${filtered.length} available/reserved cars.`);
+    return filtered;
   } catch (err) {
-    console.error('Error fetching cars:', err.message);
+    console.error('[Supabase Fetch Exception]:', err.message);
     return [];
   }
 }
