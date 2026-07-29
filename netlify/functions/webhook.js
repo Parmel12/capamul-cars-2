@@ -137,8 +137,8 @@ async function generateAutoReply(userMessage) {
   const lang = detectLanguage(userMessage);
   console.log(`[AI Agent] Query: "${userMessage}" | Language: ${lang} | Cars: ${cars.length}`);
 
-  // 1. Try Gemini API via REST if API key exists
-  if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE' && apiKey.length > 10) {
+  // 1. Try Gemini API via REST if API key exists and is a valid format
+  if (apiKey && apiKey.startsWith('AIza')) {
     const aiText = await callGeminiRestApi(apiKey, userMessage, cars, lang);
     if (aiText) {
       console.log('[AI Agent] Gemini REST response generated successfully.');
@@ -146,7 +146,7 @@ async function generateAutoReply(userMessage) {
     }
   }
 
-  // 2. Enhanced Fallback Engine (No third-party dependencies required!)
+  // 2. Enhanced Fallback Engine (Precise Model Matching)
   console.log('[AI Agent] Using enhanced rule-based response engine.');
   const msg = userMessage.toLowerCase();
 
@@ -163,12 +163,8 @@ async function generateAutoReply(userMessage) {
       `• ${c.transmission} | ${c.mileage}`
     ).join('\n\n');
 
-    if (lang === 'bisaya') {
-      return `Maayong adlaw! 👋 Naa diri ang pinaka-barato namong available units sa Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\nGusto ka mag-test drive o magpa-reserve sa bisan unsa nga unit?`;
-    }
-    if (lang === 'tagalog') {
-      return `Magandang araw! 👋 Narito ang aming pinakamura at pinakasulit na available units sa Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawagan/Mag-text: 09686995654\n\nGusto mo bang mag-test drive o magpa-reserve ng alinman sa mga ito?`;
-    }
+    if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang pinaka-barato namong available units sa Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\nGusto ka mag-test drive o magpa-reserve sa bisan unsa nga unit?`;
+    if (lang === 'tagalog') return `Magandang araw! 👋 Narito ang aming pinakamura at pinakasulit na available units sa Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawagan/Mag-text: 09686995654\n\nGusto mo bang mag-test drive o magpa-reserve ng alinman sa mga ito?`;
     return `Hello! 👋 Here are our most affordable vehicle options currently available at Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWould you like to schedule a test drive or make a reservation?`;
   }
 
@@ -185,12 +181,8 @@ async function generateAutoReply(userMessage) {
       `• ${c.transmission} | ${c.mileage}`
     ).join('\n\n');
 
-    if (lang === 'bisaya') {
-      return `Maayong adlaw! 👋 Mao kini ang among gina-recommend nga mga units nga top condition ug "good as new" pa kaayo:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\nAsa man niani ang imong pinaka-ganahan?`;
-    }
-    if (lang === 'tagalog') {
-      return `Magandang araw! 👋 Ito ang aming inirerekomendang mga units na nasa top condition at "good as new" pa:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tumawag o mag-text: 09686995654\n\nAlin sa mga ito ang pinakagusto mo?`;
-    }
+    if (lang === 'bisaya') return `Maayong adlaw! 👋 Mao kini ang among gina-recommend nga mga units nga top condition ug "good as new" pa kaayo:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\nAsa man niani ang imong pinaka-ganahan?`;
+    if (lang === 'tagalog') return `Magandang araw! 👋 Ito ang aming inirerekomendang mga units na nasa top condition at "good as new" pa:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tumawag o mag-text: 09686995654\n\nAlin sa mga ito ang pinakagusto mo?`;
     return `Hello! 👋 Here are our recommended top-condition, "good as new" vehicles available at Capamul Cars:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWhich of these would you like to check out?`;
   }
 
@@ -215,12 +207,21 @@ async function generateAutoReply(userMessage) {
     return `Hello! 👋 Here are our ${isAuto ? 'Automatic' : 'Manual'} transmission vehicles:\n\n${transList}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654`;
   }
 
-  // D. SPECIFIC CAR MODEL/MAKE INQUIRY
-  const matchedCars = cars.filter(c => 
-    msg.includes(c.name.toLowerCase()) || 
-    (c.make && msg.includes(c.make.toLowerCase())) || 
-    (c.model && msg.includes(c.model.toLowerCase()))
-  );
+  // D. SPECIFIC CAR MODEL/MAKE INQUIRY (PRECISE WORD BOUNDARY MATCHING)
+  const matchedCars = cars.filter(c => {
+    const nameStr = (c.name || '').toLowerCase();
+    const makeStr = (c.make || '').toLowerCase();
+    const modelStr = (c.model || '').toLowerCase();
+
+    // Extract all multi-char words from car fields
+    const carKeywords = [nameStr, makeStr, modelStr]
+      .join(' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2); // Exclude single/double letters like 'g', '1.0', etc.
+
+    // Match if user message contains any specific car keyword (e.g. 'vios', 'wigo', 'hilux', 'montero', 'toyota', etc.)
+    return carKeywords.some(kw => msg.includes(kw));
+  });
 
   if (matchedCars.length > 0) {
     const list = matchedCars.slice(0, 3).map(c => 
@@ -231,7 +232,7 @@ async function generateAutoReply(userMessage) {
       `• ${c.transmission} | ${c.mileage}`
     ).join('\n\n');
 
-    if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang mga detalye sa unit nga imong gipangutana:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Tawag o Text: 09686995654\n\nGusto ba ka mag-schedule og test drive o magpa-reserve?`;
+    if (lang === 'bisaya') return `Maayong adlaw! 👋 Narito ang mga detalye sa unit nga imong gipangutana:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Tawag o Text: 09686995654\n\nGusto ba ka mag-schedule og test drive o magpa-reserve?`;
     if (lang === 'tagalog') return `Magandang araw! 👋 Narito ang detalye ng sasakyan na iyong tinanong:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Tumawag o mag-text: 09686995654\n\nGusto mo bang mag-schedule ng test drive o magpa-reserve?`;
     return `Hello! 👋 Here are the vehicle details you inquired about:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWould you like to schedule a test drive or make a reservation?`;
   }
