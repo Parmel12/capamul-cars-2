@@ -358,7 +358,7 @@ ${inventoryList}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply:` }] }],
-          generationConfig: { temperature: 0.5, maxOutputTokens: 600 }
+          generationConfig: { temperature: 0.5 }
         })
       });
       
