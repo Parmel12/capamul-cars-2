@@ -354,15 +354,14 @@ ${inventoryList}
       })
     });
     if (!res.ok) { 
-      const errText = await res.text();
       console.error('[Gemini] HTTP', res.status); 
-      return `DEBUG ERROR: Gemini returned ${res.status}: ${errText.substring(0, 100)}`; 
+      return null;
     }
     const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'DEBUG ERROR: Gemini returned empty text.';
+    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
   } catch (err) {
     console.error('[Gemini Error]:', err.message);
-    return `DEBUG ERROR: ${err.message}`;
+    return null;
   }
 }
 
@@ -404,12 +403,9 @@ async function generateAutoReply(userMessage, senderPsid) {
     }
     const aiText = await callGeminiRestApi(apiKey, userMessage, carsForGemini, intent, userName);
     if (aiText) { 
-      if (aiText.startsWith('DEBUG ERROR:')) return aiText; // return error to messenger
       console.log('[AI] Gemini OK.'); 
       return aiText; 
     }
-  } else {
-     return `DEBUG ERROR: Gemini API Key is missing or invalid. Key is: ${apiKey ? apiKey.substring(0, 6) + '...' : 'UNDEFINED'}`;
   }
 
   // ── Smart Fallback Engine ─────────────────────────────────────
