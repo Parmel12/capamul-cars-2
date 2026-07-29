@@ -70,12 +70,20 @@ async function getAvailableCars() {
 
 async function getAISettings() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.ai_settings&limit=1`, { headers: sbHeaders });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.ai_settings&limit=1`, { headers: getSbHeaders() });
     if (!res.ok) return { enabled: true };
     const data = await res.json();
-    if (data && data.length > 0 && data[0].value) return data[0].value;
+    if (data && data.length > 0 && data[0].value !== undefined) {
+      const val = data[0].value;
+      if (typeof val === 'object') return val;
+      if (val === false || val === 'false' || val === 'disabled' || val === 0) return { enabled: false };
+      return { enabled: true };
+    }
     return { enabled: true };
-  } catch { return { enabled: true }; }
+  } catch (err) {
+    console.error('Error fetching AI settings:', err.message);
+    return { enabled: true };
+  }
 }
 
 async function getUserProfile(psid) {
@@ -470,10 +478,27 @@ ${inventoryList}
   }
 }
 
+// ── In-Memory Reply Count per Customer (Max 4 auto-replies for human takeover) ──
+const userReplyCounts = new Map();
+const MAX_AI_REPLIES_PER_USER = 4;
+
 // ── Main Reply Generator ──────────────────────────────────────────
 async function generateAutoReply(userMessage, senderPsid) {
+  // 1. Strictly obey Admin Settings ON/OFF Toggle
   const settings = await getAISettings();
-  if (settings && settings.enabled === false) return null;
+  if (settings && (settings.enabled === false || settings.enabled === 'false')) {
+    console.log('[AI Agent] Disabled in Admin Settings. Skipping auto-reply.');
+    return null;
+  }
+
+  // 2. Limit AI auto-replies to 4 per user so human sales staff can take over
+  if (senderPsid) {
+    const currentCount = userReplyCounts.get(senderPsid) || 0;
+    if (currentCount >= MAX_AI_REPLIES_PER_USER) {
+      console.log(`[AI Limit] PSID ${senderPsid} has reached ${MAX_AI_REPLIES_PER_USER} AI replies. Handing over to human sales staff.`);
+      return null;
+    }
+  }
 
   // ── OFF-TOPIC CHECK: do not reply at all ─────────────────────
   if (isOffTopic(userMessage)) {
@@ -603,7 +628,12 @@ export const handler = async (event, context) => {
             if (senderPsid && userQuery) {
               console.log(`[FB Webhook] From PSID (${senderPsid}): "${userQuery}"`);
               const reply = await generateAutoReply(userQuery, senderPsid);
-              if (reply) await sendTextMessage(senderPsid, reply);
+              if (reply) {
+                await sendTextMessage(senderPsid, reply);
+                // Increment AI reply counter for this customer
+                const currentCount = userReplyCounts.get(senderPsid) || 0;
+                userReplyCounts.set(senderPsid, currentCount + 1);
+              }
             }
           }
         }
