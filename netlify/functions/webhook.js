@@ -165,7 +165,22 @@ function matchCarsByModel(userMessage, cars) {
     }
     return { car, score };
   });
-  return scored.filter(s => s.score >= 2).sort((a, b) => b.score - a.score).map(s => s.car);
+function formatCarsFallback(matchedCars, userName) {
+  const greeting = userName ? `Hello ${userName}! 👋` : `Hello! 👋`;
+  const list = matchedCars.slice(0, 4).map(c => 
+`🔥 ${c.name} 🔥
+💰 ${c.downPaymentFormatted} DOWNPAYMENT ONLY 💰
+💰 ${c.priceFormatted} ONLY IF CASH, NEGOTIABLE 💰
+OPEN FOR LOW DP (SUBJECT FOR APPROVAL)
+➡️ ${c.make || ''} ${c.model || ''}
+➡️ ${c.year || ''} YEAR MODEL
+➡️ ${c.transmission} TRANSMISSION
+➡️ ${c.mileage} ORIGINAL ODO
+➡️ STATUS: ${c.status}
+➡️ NO ISSUES`
+  ).join('\n\n');
+
+  return `${greeting} Here are the available units from our live inventory matching your inquiry:\n\n${list}\n\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\nGusto ba ka mag-schedule og test drive o magpa-reserve?`;
 }
 
 // ── Gemini AI Call ────────────────────────────────────────────────
@@ -457,9 +472,19 @@ async function generateAutoReply(userMessage, senderPsid) {
   }
 
   // ── Smart Fallback Engine ─────────────────────────────────────
-  console.log('[AI] Fallback engine, intent=' + intent);
+  console.log('[AI] Fallback engine, intent=' + intent + ', matched=' + matched.length);
+
+  // 1. If specific cars matched the user query (e.g. Mitsubishi, Wigo, Toyota, etc.), return them immediately!
+  if (matched.length > 0) {
+    return formatCarsFallback(matched, userName);
+  }
 
   if (intent === 'greeting') return greeting;
+
+  if (intent === 'cheapest') {
+    const sorted = [...cars].sort((a, b) => a.price - b.price);
+    if (sorted.length > 0) return formatCarsFallback(sorted, userName);
+  }
 
   if (intent === 'thanks') return `You're very welcome!\n\nThank you for choosing CAPAMUL CARS 2.0.\n\nIf you have any more questions about our vehicles, financing, or reservations, feel free to message us anytime.\n\nHave a wonderful day!`;
 
@@ -471,9 +496,15 @@ async function generateAutoReply(userMessage, senderPsid) {
 
   if (intent === 'price') return `I'd be happy to help.\n\nMay I know which vehicle you're referring to?\n\nOnce you tell me the vehicle model, I'll provide the available information including:\n• Price\n• Down payment\n• Financing option\n• Specifications`;
 
-  if (intent === 'inventory') return `Yes, the vehicle is currently available.\n\nIf you'd like, I can also provide the down payment, financing estimate, and other details.\n\nFor the complete list of available vehicles, please visit:\n${WEBSITE}`;
+  if (intent === 'inventory' && cars.length > 0) {
+    return formatCarsFallback(cars, userName);
+  }
 
-  // DEFAULT
+  // DEFAULT FALLBACK (If no cars in DB or completely unknown)
+  if (cars.length > 0) {
+    return formatCarsFallback(cars, userName);
+  }
+
   return `That's a great question.\n\nI'd like to provide you with the most accurate information. Allow me to forward your inquiry to one of our sales representatives, who will get back to you as soon as possible.\n\nThank you for your patience.`;
 }
 
