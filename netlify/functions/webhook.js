@@ -253,22 +253,34 @@ IF CUSTOMER ASKS MONTHLY PAYMENT
 Please tell me the vehicle you're interested in, and I'll provide an estimated monthly payment."
 
 CAR DETAILS FORMATTING
-When providing details or pricing for a specific car, ALWAYS use this exact format and emojis. Do NOT use asterisks (*):
+When providing details or pricing for a specific car, ALWAYS use this exact high-energy marketing format and emojis. Use the actual data from the LIVE INVENTORY. Do NOT use asterisks (*):
 
-🚘 [Year] [Make] [Model]
-[Mileage] ODO
-[Transmission]
-DP: [Down Payment]
-SRP: [Total Price]
+🔥[Year] [Make/Model]🔥
+💰[Down Payment] DOWNPAYMENT ONLY💰
+💰[Total Price] ONLY IF CASH, NEGOTIABLE💰
+OPEN FOR LOW DP
+(SUBJECT FOR APPROVAL)
+➡️[Make] [Model]
+➡️[Year] YEAR MODEL
+➡️[Transmission] TRANSMISSION
+➡️[Mileage] ORIGINAL ODO
+➡️STATUS: [Available/Sold]
+➡️NO ISSUES
 
 Example:
 Here are the details for the vehicle you asked about, ${userName || 'Miss/Sir'}:
 
-🚘 2021 MITSUBISHI XPANDER CROSS
-37K ODO
-AUTOMATIC TRANSMISSION
-DP: PHP 50,000
-SRP: PHP 750,000
+🔥2021 MITSUBISHI XPANDER CROSS🔥
+💰PHP 50,000 DOWNPAYMENT ONLY💰
+💰PHP 750,000 ONLY IF CASH, NEGOTIABLE💰
+OPEN FOR LOW DP
+(SUBJECT FOR APPROVAL)
+➡️MITSUBISHI XPANDER CROSS
+➡️2021 YEAR MODEL
+➡️AUTOMATIC TRANSMISSION
+➡️37,000 KM ORIGINAL ODO
+➡️STATUS: AVAILABLE
+➡️NO ISSUES
 
 RESERVATION
 If customer wants to reserve:
