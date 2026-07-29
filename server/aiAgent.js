@@ -129,8 +129,8 @@ export async function generateAutoReply(userMessage) {
 async function callGemini(userMessage, cars, lang) {
   const inventorySummary = cars.length > 0
     ? cars.map(c =>
-        `• ${c.name} (${c.year}) | SRP: ${c.priceFormatted} | DP: ${c.downPaymentFormatted} | Status: ${c.status} | Transmission: ${c.transmission} | Fuel: ${c.fuelType} | Mileage: ${c.mileage} | Body: ${c.bodyType}`
-      ).join('\n')
+      `• ${c.name} (${c.year}) | SRP: ${c.priceFormatted} | DP: ${c.downPaymentFormatted} | Status: ${c.status} | Transmission: ${c.transmission} | Fuel: ${c.fuelType} | Mileage: ${c.mileage} | Body: ${c.bodyType}`
+    ).join('\n')
     : 'No vehicles currently available. New arrivals coming soon.';
 
   const langInstruction = {
@@ -146,7 +146,7 @@ async function callGemini(userMessage, cars, lang) {
 • Tagline: "All in BEST Condition"
 • Location: Purok 2, Dapdap, Barobo, Surigao del Sur
 • Contact: 09686995654
-• Website: https://capamulcars.com
+• Website: https://capamulcars2.netlify.app
 • Facebook: https://www.facebook.com/share/1Eq7cKc5uA/
 
 ═══ LIVE INVENTORY (real-time from database) ═══
