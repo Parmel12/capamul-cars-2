@@ -374,24 +374,33 @@ initApp = async function() {
   loadNewArrivals();
   loadDiscountedCars();
 
-  // Background revalidation: re-fetch from Supabase after 1.5s to ensure all devices see latest cars
-  setTimeout(() => {
-    if (window.api) window.api.getCars(true); // force refresh — fires cars-updated if data changed
-  }, 1500);
+  // Background revalidation after 2s: always fetch fresh from Supabase
+  // so other devices see new/updated cars without a full page reload
+  setTimeout(async () => {
+    if (!window.api) return;
+    try {
+      const CACHE_KEY = 'capamul_cache_cars';
+      const oldCache = localStorage.getItem(CACHE_KEY);
+      // Force a fresh fetch by resetting the promise
+      window.api._carsPromise = null;
+      const fresh = await window.api.getCars();
+      const freshStr = JSON.stringify(fresh);
+      if (oldCache !== freshStr) {
+        // Data changed — reload all sections to reflect the latest inventory
+        loadCarsList();
+        loadFeaturedCars();
+        loadNewArrivals();
+        loadDiscountedCars();
+      }
+    } catch(e) {}
+  }, 2000);
 };
 
-window.addEventListener('cars-updated', (e) => {
-  // e.detail contains the fresh car array from Supabase — skip cache and re-render directly
-  const freshCars = e && e.detail;
-  if (freshCars && Array.isArray(freshCars)) {
-    renderCarsList(freshCars);
-    renderFeaturedCars(freshCars);
-    renderNewArrivals(freshCars);
-    renderDiscountedCars(freshCars);
-  } else {
-    loadCarsList();
-    loadFeaturedCars();
-    loadNewArrivals();
-    loadDiscountedCars();
-  }
+window.addEventListener('cars-updated', () => {
+  // Called when admin adds/edits/deletes a car in the same tab
+  loadCarsList();
+  loadFeaturedCars();
+  loadNewArrivals();
+  loadDiscountedCars();
 });
+
