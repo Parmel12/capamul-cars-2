@@ -202,10 +202,11 @@ OPEN FOR LOW DP (SUBJECT FOR APPROVAL)
     return `${countHeader}\n\nHere are 2 of our top featured units:\n\n${list}\n\n🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nTo help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?`;
   }
 
-  // 2. Out-of-Stock Handling (e.g., Vios, Civic, etc.)
-  const requestedQuery = (userMessage || 'vehicle').trim();
+  // 2. Check if the user message contains a specific car model or brand name
+  const msgLower = (userMessage || '').toLowerCase();
+  const knownModelMatch = msgLower.match(/\b(vios|civic|fortuner|hilux|navara|innova|everest|rush|avanza|city|jazz|almera|terra|livina|ertiga|jimny|celerio|apv|l300|adventure|stargazer|xpander|mirage|wigo|montero|cross|toyota|mitsubishi|nissan|suzuki|honda|hyundai|ford|isuzu|kia)\b/i);
+
   const alternatives = (allCars && allCars.length > 0) ? allCars.slice(0, 2) : [];
-  
   const altList = alternatives.map(c => 
 `🔥 ${c.name} 🔥
 💰 ${c.downPaymentFormatted} DOWNPAYMENT ONLY 💰
@@ -219,9 +220,20 @@ OPEN FOR LOW DP (SUBJECT FOR APPROVAL)
 ➡️ NO ISSUES`
   ).join('\n\n');
 
-  const altSection = altList ? `\n\nHere are 2 of our top alternative units available in stock right now:\n\n${altList}` : '';
+  // IF SPECIFIC MODEL / BRAND REQUESTED BUT NOT IN STOCK (e.g. Vios, Civic)
+  if (knownModelMatch) {
+    const requestedModelName = knownModelMatch[0].toUpperCase();
+    const altSection = altList ? `\n\nHere are 2 of our top alternative units available in stock right now:\n\n${altList}` : '';
 
-  return `Thank you for asking! As of the moment, the requested unit ("${requestedQuery}") is currently OUT OF STOCK in our showroom. 🚗\n\nOur inventory is updated daily! You can check all live available vehicles anytime on our website:\n🌐 ${WEBSITE} (or search Capamul Cars 2.0)${altSection}\n\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nWould you like us to note down your details so our sales team can notify you as soon as a new unit arrives?`;
+    return `Thank you for asking! As of the moment, the requested model (${requestedModelName}) is currently OUT OF STOCK in our showroom. 🚗\n\nOur inventory is updated daily! You can check all live available vehicles anytime on our website:\n🌐 ${WEBSITE} (or search Capamul Cars 2.0)${altSection}\n\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nWould you like us to note down your details so our sales team can notify you as soon as a new ${requestedModelName} arrives?`;
+  }
+
+  // IF GENERAL INQUIRY (e.g. "May car po kayo?", "Ano available?", "Meron ba?")
+  const totalCount = allCars.length;
+  const countText = totalCount > 0 ? `Yes! We currently have ${totalCount} available vehicles in our CAPAMUL CARS 2.0 inventory! 🚗` : `Welcome to CAPAMUL CARS 2.0! 🚗`;
+  const featuredSection = altList ? `\n\nHere are 2 of our top featured available units:\n\n${altList}` : '';
+
+  return `${countText}${featuredSection}\n\n🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nTo help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?`;
 }
 
 // ── Gemini AI Call ────────────────────────────────────────────────
