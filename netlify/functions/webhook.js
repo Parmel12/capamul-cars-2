@@ -345,21 +345,36 @@ ${inventoryList}
        aiStart = getTimeGreeting('english', userName);
     }
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply (start with "${aiStart}" if it is the start of the conversation, otherwise reply naturally):` }] }],
-        generationConfig: { temperature: 0.5, maxOutputTokens: 600 }
-      })
-    });
-    if (!res.ok) { 
-      const errText = await res.text();
-      console.error('[Gemini] HTTP', res.status); 
-      return `DEBUG ERROR: Gemini returned ${res.status}: ${errText.substring(0, 150)}`;
+    const endpoints = [
+      'v1beta/models/gemini-1.5-flash',
+      'v1/models/gemini-1.5-flash',
+      'v1beta/models/gemini-1.5-flash-latest',
+      'v1beta/models/gemini-pro',
+      'v1/models/gemini-pro'
+    ];
+
+    let lastError = 'DEBUG ERROR: No endpoints succeeded.';
+    
+    for (const ep of endpoints) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/${ep}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply (start with "${aiStart}" if it is the start of the conversation, otherwise reply naturally):` }] }],
+          generationConfig: { temperature: 0.5, maxOutputTokens: 600 }
+        })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'DEBUG ERROR: Gemini returned empty text.';
+      } else {
+        const errText = await res.text();
+        console.error(`[Gemini] HTTP ${res.status} for ${ep}`);
+        lastError = `DEBUG ERROR: Gemini returned ${res.status} for ${ep}: ${errText.substring(0, 100)}`;
+      }
     }
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'DEBUG ERROR: Gemini returned empty text.';
+    return lastError;
   } catch (err) {
     console.error('[Gemini Error]:', err.message);
     return `DEBUG ERROR: Exception ${err.message}`;
