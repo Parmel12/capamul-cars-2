@@ -91,33 +91,37 @@ const api = {
       const CACHE_KEY = 'capamul_cache_cars';
       const cached = localStorage.getItem(CACHE_KEY);
 
-      if (forceRefresh) this._carsPromise = null;
+      if (forceRefresh) {
+        this._carsPromise = null;
+        localStorage.removeItem(CACHE_KEY);
+      }
 
-      if (!this._carsPromise) {
-        this._carsPromise = sb.get('cars', 'select=*&order=created_at.desc').then(data => {
+      // Always fetch fresh cars data from Supabase REST API
+      const freshPromise = sb.get('cars', 'select=*&order=created_at.desc').then(data => {
+        if (Array.isArray(data)) {
           const newDataStr = JSON.stringify(data);
           if (cached !== newDataStr) {
             localStorage.setItem(CACHE_KEY, newDataStr);
-            // Optionally notify the app that fresh data arrived
-            window.dispatchEvent(new CustomEvent('cars-updated'));
+            window.dispatchEvent(new CustomEvent('cars-updated', { detail: data }));
           }
-          return data;
-        }).catch(err => {
-          console.error('getCars fetch error:', err);
-          this._carsPromise = null;
-          if (cached) return JSON.parse(cached);
-          return [];
-        });
-      }
+        }
+        return data;
+      }).catch(err => {
+        console.error('getCars fetch error:', err);
+        if (cached) return JSON.parse(cached);
+        return [];
+      });
 
+      // If cached data exists and forceRefresh is false, return cached data immediately for zero UI delay
+      // BUT let freshPromise run in the background to update cache and dispatch 'cars-updated'
       if (cached && !forceRefresh) {
+        freshPromise.catch(() => {});
         return JSON.parse(cached);
       }
 
-      return await this._carsPromise;
+      return await freshPromise;
     } catch (err) {
       console.error('getCars outer error:', err);
-      this._carsPromise = null;
       return [];
     }
   },
