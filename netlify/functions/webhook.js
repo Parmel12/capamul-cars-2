@@ -422,7 +422,7 @@ async function generateAutoReply(userMessage, senderPsid) {
   }
 
   const cars     = await getAvailableCars();
-  const apiKey   = (process.env.GEMINI_API_KEY || '').trim();
+  const apiKey   = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '').trim();
   const intent   = detectIntent(userMessage);
   const userName = senderPsid ? await getUserProfile(senderPsid) : null;
   const greeting = getTimeGreeting('english', userName);
