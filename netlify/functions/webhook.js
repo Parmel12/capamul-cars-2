@@ -1,5 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwwgrhjpcfmdnhcbampu.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3d2dyaGpwY2ZtZG5oY2JhbXB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MDQ3ODQsImV4cCI6MjA5OTM4MDc4NH0.kFQqZ-06V9T6UijLwNviyjF2m19mV8evqUT9humN074';
 const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || 'capamul_cars_messenger_verify_token_123';
@@ -85,6 +83,48 @@ function detectLanguage(msg) {
   return 'english';
 }
 
+async function callGeminiRestApi(apiKey, userMessage, cars, lang) {
+  try {
+    const inventorySummary = cars.length > 0
+      ? cars.map(c => `• ${c.name} (${c.year}) | SRP: ${c.priceFormatted} | DP: ${c.downPaymentFormatted} | Status: ${c.status} | ${c.transmission} | ${c.mileage}`).join('\n')
+      : 'Currently no vehicles available.';
+
+    const langInstruction = {
+      bisaya: `Customer is speaking BISAYA / CEBUANO. Reply fluently in natural Bisaya/Cebuano (e.g. "Maayong adlaw", "naa", "pila", "salamat").`,
+      tagalog: `Customer is speaking TAGALOG / FILIPINO. Reply fluently in natural Tagalog (e.g. "Magandang araw", "po", "opo", "magkano").`,
+      english: `Customer is speaking ENGLISH. Reply in clear, friendly English.`
+    }[lang];
+
+    const systemPrompt = `You are "Capamul AI", official sales assistant for Capamul Cars 2.0 dealership in Barobo, Surigao del Sur.
+Location: Purok 2, Dapdap, Barobo, Surigao del Sur | Phone: 09686995654 | Web: https://capamulcars.com
+
+LIVE CAR INVENTORY:
+${inventorySummary}
+
+RULES:
+1. State exact SRP (Total Price) and Down Payment (DP) in ₱ for any car mentioned.
+2. Use emojis (🚗, 💰, 📍, 📞) appropriately.
+3. ${langInstruction}
+4. Directly answer the user's specific request.`;
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer Message: "${userMessage}"\n\nYour reply:` }] }]
+      })
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    return text || null;
+  } catch (err) {
+    console.error('[Gemini REST Error]:', err.message);
+    return null;
+  }
+}
+
 async function generateAutoReply(userMessage) {
   const settings = await getAISettings();
   if (settings && settings.enabled === false) {
@@ -97,49 +137,20 @@ async function generateAutoReply(userMessage) {
   const lang = detectLanguage(userMessage);
   console.log(`[AI Agent] Query: "${userMessage}" | Language: ${lang} | Cars: ${cars.length}`);
 
-  // Only call Gemini if key starts with AIza (valid Gemini API key format)
-  if (apiKey && apiKey.startsWith('AIza')) {
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const inventorySummary = cars.length > 0
-        ? cars.map(c => `• ${c.name} (${c.year}) | SRP: ${c.priceFormatted} | DP: ${c.downPaymentFormatted} | Status: ${c.status} | ${c.transmission} | ${c.mileage}`).join('\n')
-        : 'Currently no vehicles available.';
-
-      const langInstruction = {
-        bisaya: `Customer is speaking BISAYA / CEBUANO. Reply fluently in natural Bisaya/Cebuano (e.g. "Maayong adlaw", "naa", "pila", "salamat").`,
-        tagalog: `Customer is speaking TAGALOG / FILIPINO. Reply fluently in natural Tagalog (e.g. "Magandang araw", "po", "opo", "magkano").`,
-        english: `Customer is speaking ENGLISH. Reply in clear, friendly English.`
-      }[lang];
-
-      const systemPrompt = `You are "Capamul AI", official sales assistant for Capamul Cars 2.0 dealership in Barobo, Surigao del Sur.
-Location: Purok 2, Dapdap, Barobo, Surigao del Sur | Phone: 09686995654 | Web: https://capamulcars.com
-
-LIVE CAR INVENTORY:
-${inventorySummary}
-
-RULES:
-1. State exact SRP (Total Price) and Down Payment (DP) in ₱ for any car mentioned.
-2. Use emojis (🚗, 💰, 📍, 📞) appropriately.
-3. ${langInstruction}
-4. Directly answer the user's specific request (e.g. cheapest car, recommendations, budget, model details).`;
-
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const result = await model.generateContent(`${systemPrompt}\n\nCustomer Message: "${userMessage}"\n\nYour reply:`);
-      const text = result.response.text()?.trim();
-      if (text) {
-        console.log('[AI Agent] Gemini generated response successfully.');
-        return text;
-      }
-    } catch (err) {
-      console.error('[AI Agent] Gemini API Error:', err.message);
+  // 1. Try Gemini API via REST if API key exists
+  if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE' && apiKey.length > 10) {
+    const aiText = await callGeminiRestApi(apiKey, userMessage, cars, lang);
+    if (aiText) {
+      console.log('[AI Agent] Gemini REST response generated successfully.');
+      return aiText;
     }
   }
 
-  // Enhanced Fallback Response Engine
-  console.log('[AI Agent] Using enhanced rule-based engine.');
+  // 2. Enhanced Fallback Engine (No third-party dependencies required!)
+  console.log('[AI Agent] Using enhanced rule-based response engine.');
   const msg = userMessage.toLowerCase();
 
-  // 1. CHEAPEST CAR / LOWEST PRICE INQUIRY
+  // A. CHEAPEST CAR / LOWEST PRICE INQUIRY
   const isCheapestInquiry = /\b(cheap|cheapest|lowest|barato|pinaka barato|pinakamura|mura|lowest price|pinaka mura)\b/i.test(msg);
   if (isCheapestInquiry && cars.length > 0) {
     const availableOnly = cars.filter(c => (c.status || '').toLowerCase() === 'available');
@@ -161,7 +172,7 @@ RULES:
     return `Hello! 👋 Here are our most affordable vehicle options currently available at Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWould you like to schedule a test drive or make a reservation?`;
   }
 
-  // 2. RECOMMENDATION / "GOOD AS NEW" / BEST CONDITION INQUIRY
+  // B. RECOMMENDATION / "GOOD AS NEW" / BEST CONDITION INQUIRY
   const isRecommendInquiry = /\b(recommend|rekomenda|ika recommend|ika-recommend|good as new|best|nindot|maganda|suggest)\b/i.test(msg);
   if (isRecommendInquiry && cars.length > 0) {
     const availableOnly = cars.filter(c => (c.status || '').toLowerCase() === 'available');
@@ -183,7 +194,7 @@ RULES:
     return `Hello! 👋 Here are our recommended top-condition, "good as new" vehicles available at Capamul Cars:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWhich of these would you like to check out?`;
   }
 
-  // 3. TRANSMISSION INQUIRY (AUTOMATIC / MANUAL)
+  // C. TRANSMISSION INQUIRY (AUTOMATIC / MANUAL)
   const isTransmissionInquiry = /\b(automatic|manual|matic|a\/t|m\/t|at|mt)\b/i.test(msg);
   if (isTransmissionInquiry && cars.length > 0) {
     const isAuto = /\b(automatic|matic|a\/t|at)\b/i.test(msg);
@@ -204,7 +215,7 @@ RULES:
     return `Hello! 👋 Here are our ${isAuto ? 'Automatic' : 'Manual'} transmission vehicles:\n\n${transList}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654`;
   }
 
-  // 4. SPECIFIC CAR MODEL/MAKE INQUIRY
+  // D. SPECIFIC CAR MODEL/MAKE INQUIRY
   const matchedCars = cars.filter(c => 
     msg.includes(c.name.toLowerCase()) || 
     (c.make && msg.includes(c.make.toLowerCase())) || 
@@ -225,7 +236,7 @@ RULES:
     return `Hello! 👋 Here are the vehicle details you inquired about:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWould you like to schedule a test drive or make a reservation?`;
   }
 
-  // 5. DOWN PAYMENT / PRICE INQUIRY
+  // E. DOWN PAYMENT / PRICE INQUIRY
   if (/\b(dp|down|price|how much|magkano|pila|tag pila|presyo)\b/i.test(msg)) {
     const topCars = cars.slice(0, 4).map(c => `• *${c.name}*: DP ${c.downPaymentFormatted} (SRP ${c.priceFormatted})`).join('\n');
     if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang uban namong available units ug ang ilang Down Payment (DP):\n\n${topCars}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654\ni-reply lang ang car model para sa kompletong detalye!`;
@@ -233,7 +244,7 @@ RULES:
     return `Hello! 👋 Here are some of our top available cars with their Down Payment (DP) options:\n\n${topCars}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654\nReply with the car model for complete details!`;
   }
 
-  // 6. DEFAULT HELPFUL INVENTORY SUMMARY
+  // F. DEFAULT HELPFUL INVENTORY SUMMARY
   const topAvailable = cars.slice(0, 4).map(c => `• *${c.name}*: DP ${c.downPaymentFormatted}`).join('\n');
 
   if (lang === 'bisaya') return `Maayong adlaw! 👋 Salamat sa pag-message sa *Capamul Cars 2.0*!\n\nNaa mi ${cars.length} ka available nga units! Pila sa among popular models:\n${topAvailable}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\ni-message lang kung unsa nga car model o budget imong gipangita!`;
