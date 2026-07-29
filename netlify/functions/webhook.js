@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwwgrhjpcfmdnhcbampu.supabase.co';
@@ -29,9 +28,10 @@ function formatPhp(amount) {
 
 async function getAvailableCars() {
   try {
-    const res = await axios.get(`${SUPABASE_URL}/rest/v1/cars?select=*&order=created_at.desc`, { headers: sbHeaders });
-    const data = res.data || [];
-    const activeCars = data.filter(c => ['available', 'reserved'].includes((c.status || '').toLowerCase()));
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/cars?select=*&order=created_at.desc`, { headers: sbHeaders });
+    if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+    const data = await res.json();
+    const activeCars = (data || []).filter(c => ['available', 'reserved'].includes((c.status || '').toLowerCase()));
     return activeCars.map(c => ({
       id: c.id,
       name: c.name || `${c.year || ''} ${c.make || ''} ${c.model || ''}`.trim(),
@@ -56,9 +56,11 @@ async function getAvailableCars() {
 
 async function getAISettings() {
   try {
-    const res = await axios.get(`${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.ai_settings&limit=1`, { headers: sbHeaders });
-    if (res.data && res.data.length > 0 && res.data[0].value) {
-      return res.data[0].value;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?select=value&key=eq.ai_settings&limit=1`, { headers: sbHeaders });
+    if (!res.ok) return { enabled: true };
+    const data = await res.json();
+    if (data && data.length > 0 && data[0].value) {
+      return data[0].value;
     }
     return { enabled: true };
   } catch (err) {
@@ -86,13 +88,14 @@ function detectLanguage(msg) {
 async function generateAutoReply(userMessage) {
   const settings = await getAISettings();
   if (settings && settings.enabled === false) {
-    console.log('AI Agent is OFF in Admin settings.');
+    console.log('[AI Agent] Auto-reply is OFF in Admin settings.');
     return null;
   }
 
   const cars = await getAvailableCars();
   const apiKey = process.env.GEMINI_API_KEY;
   const lang = detectLanguage(userMessage);
+  console.log(`[AI Agent] User query: "${userMessage}" | Language: ${lang} | Cars count: ${cars.length}`);
 
   if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE' && apiKey.length > 10) {
     try {
@@ -122,13 +125,17 @@ RULES:
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent(`${systemPrompt}\n\nCustomer Message: "${userMessage}"\n\nYour reply:`);
       const text = result.response.text()?.trim();
-      if (text) return text;
+      if (text) {
+        console.log('[AI Agent] Gemini generated response successfully.');
+        return text;
+      }
     } catch (err) {
-      console.error('Gemini API Error:', err.message);
+      console.error('[AI Agent] Gemini API Error:', err.message);
     }
   }
 
   // Fallback Engine
+  console.log('[AI Agent] Using rule-based fallback response engine.');
   const msg = userMessage.toLowerCase();
   const matchedCars = cars.filter(c => 
     msg.includes(c.name.toLowerCase()) || 
@@ -161,17 +168,26 @@ RULES:
 async function sendTextMessage(recipientPsid, text) {
   const token = process.env.FB_PAGE_ACCESS_TOKEN || FB_PAGE_ACCESS_TOKEN;
   if (!token) {
-    console.log('[FB Messenger Token Missing]');
+    console.error('[FB Messenger] Token Missing in sendTextMessage!');
     return;
   }
   try {
-    await axios.post(`${GRAPH_API_URL}?access_token=${token}`, {
-      recipient: { id: recipientPsid },
-      message: { text: text }
+    const res = await fetch(`${GRAPH_API_URL}?access_token=${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        recipient: { id: recipientPsid },
+        message: { text: text }
+      })
     });
-    console.log('FB Message sent to PSID:', recipientPsid);
+    const resData = await res.json();
+    if (!res.ok) {
+      console.error('[FB Messenger Error]:', resData);
+    } else {
+      console.log('[FB Messenger Success] Replied to PSID:', recipientPsid, resData);
+    }
   } catch (err) {
-    console.error('FB Send Message Error:', err.response?.data || err.message);
+    console.error('[FB Send Message Error]:', err.message);
   }
 }
 
@@ -197,23 +213,24 @@ export const handler = async (event, context) => {
       if (body.object === 'page') {
         const entries = body.entry || [];
         for (const entry of entries) {
-          const webhookEvent = entry.messaging?.[0];
-          if (!webhookEvent) continue;
+          const webhookEvents = entry.messaging || [];
+          for (const webhookEvent of webhookEvents) {
+            const senderPsid = webhookEvent.sender?.id;
+            const userQuery = webhookEvent.message?.text || webhookEvent.postback?.payload;
 
-          const senderPsid = webhookEvent.sender?.id;
-          const userQuery = webhookEvent.message?.text || webhookEvent.postback?.payload;
-
-          if (senderPsid && userQuery) {
-            const reply = await generateAutoReply(userQuery);
-            if (reply) {
-              await sendTextMessage(senderPsid, reply);
+            if (senderPsid && userQuery) {
+              console.log(`[FB Webhook] Received message from PSID (${senderPsid}): "${userQuery}"`);
+              const reply = await generateAutoReply(userQuery);
+              if (reply) {
+                await sendTextMessage(senderPsid, reply);
+              }
             }
           }
         }
         return { statusCode: 200, body: 'EVENT_RECEIVED' };
       }
     } catch (err) {
-      console.error('Netlify Webhook Error:', err.message);
+      console.error('[Netlify Webhook Error]:', err.message);
     }
     return { statusCode: 200, body: 'OK' };
   }
