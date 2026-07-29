@@ -14,7 +14,7 @@ const WEBSITE  = 'https://capamulcars2.netlify.app';
 // ── In-Memory State for Owner Takeover ────────────────────────────
 // In a serverless environment, this persists only while the container is warm.
 const pausedUsers = new Map();
-const PAUSE_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+const PAUSE_DURATION = 5 * 60 * 1000; // 5 minutes (reduced from 2 hours for active testing)
 
 function getSbHeaders() {
   return {
@@ -179,7 +179,7 @@ function matchCarsByModel(userMessage, cars) {
 
 function formatCarsFallback(matchedCars, userName) {
   const greeting = userName ? `Hello ${userName}! 👋` : `Hello! 👋`;
-  const list = matchedCars.slice(0, 4).map(c => 
+  const list = matchedCars.slice(0, 3).map(c => 
 `🔥 ${c.name} 🔥
 💰 ${c.downPaymentFormatted} DOWNPAYMENT ONLY 💰
 💰 ${c.priceFormatted} ONLY IF CASH, NEGOTIABLE 💰
@@ -523,17 +523,32 @@ async function generateAutoReply(userMessage, senderPsid) {
 async function sendTextMessage(recipientPsid, text) {
   const token = process.env.FB_PAGE_ACCESS_TOKEN || FB_PAGE_ACCESS_TOKEN;
   if (!token) { console.error('[FB Messenger] Token Missing!'); return; }
-  try {
-    const res = await fetch(`${GRAPH_API_URL}?access_token=${token}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipient: { id: recipientPsid }, message: { text } })
-    });
-    const resData = await res.json();
-    if (!res.ok) console.error('[FB Messenger Error]:', resData);
-    else console.log('[FB Messenger Success] Replied to PSID:', recipientPsid);
-  } catch (err) {
-    console.error('[FB Send Message Error]:', err.message);
+
+  // Split long messages to comply with Facebook Messenger's strict 2000 character limit per message
+  const chunks = [];
+  let current = text;
+  while (current.length > 1800) {
+    let splitIdx = current.lastIndexOf('\n\n', 1800);
+    if (splitIdx <= 0) splitIdx = current.lastIndexOf('\n', 1800);
+    if (splitIdx <= 0) splitIdx = 1800;
+    chunks.push(current.substring(0, splitIdx).trim());
+    current = current.substring(splitIdx).trim();
+  }
+  if (current.length > 0) chunks.push(current);
+
+  for (const chunk of chunks) {
+    try {
+      const res = await fetch(`${GRAPH_API_URL}?access_token=${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient: { id: recipientPsid }, message: { text: chunk } })
+      });
+      const resData = await res.json();
+      if (!res.ok) console.error('[FB Messenger Error]:', resData);
+      else console.log('[FB Messenger Success] Replied to PSID:', recipientPsid);
+    } catch (err) {
+      console.error('[FB Send Message Error]:', err.message);
+    }
   }
 }
 
