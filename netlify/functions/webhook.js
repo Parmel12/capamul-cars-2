@@ -79,7 +79,7 @@ function detectLanguage(msg) {
 
   if (bScore > tScore && bScore > 0) return 'bisaya';
   if (tScore > bScore && tScore > 0) return 'tagalog';
-  if (/\b(pila|naa ba|asa man|tag pila|unsa|ganahan|maayong)\b/i.test(lower)) return 'bisaya';
+  if (/\b(pila|naa ba|asa man|tag pila|unsa|ganahan|maayong|ika recommend|ika-recommend|sakyanan)\b/i.test(lower)) return 'bisaya';
   if (/\b(magkano|nasaan|ito ba|po ba|opo|pwede po|mayroon)\b/i.test(lower)) return 'tagalog';
 
   return 'english';
@@ -95,7 +95,7 @@ async function generateAutoReply(userMessage) {
   const cars = await getAvailableCars();
   const apiKey = process.env.GEMINI_API_KEY;
   const lang = detectLanguage(userMessage);
-  console.log(`[AI Agent] User query: "${userMessage}" | Language: ${lang} | Cars count: ${cars.length}`);
+  console.log(`[AI Agent] Query: "${userMessage}" | Language: ${lang} | Cars: ${cars.length}`);
 
   if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE' && apiKey.length > 10) {
     try {
@@ -105,22 +105,22 @@ async function generateAutoReply(userMessage) {
         : 'Currently no vehicles available.';
 
       const langInstruction = {
-        bisaya: `Customer is speaking BISAYA / CEBUANO. You MUST reply entirely in natural Bisaya/Cebuano (e.g. "Maayong adlaw", "naa", "pila", "salamat", "tawag").`,
-        tagalog: `Customer is speaking TAGALOG / FILIPINO. You MUST reply entirely in natural Tagalog (e.g. "Magandang araw", "po", "opo", "magkano", "salamat").`,
+        bisaya: `Customer is speaking BISAYA / CEBUANO. Reply fluently in natural Bisaya/Cebuano (e.g. "Maayong adlaw", "naa", "pila", "salamat").`,
+        tagalog: `Customer is speaking TAGALOG / FILIPINO. Reply fluently in natural Tagalog (e.g. "Magandang araw", "po", "opo", "magkano").`,
         english: `Customer is speaking ENGLISH. Reply in clear, friendly English.`
       }[lang];
 
-      const systemPrompt = `You are "Capamul AI", official friendly Facebook Messenger sales assistant for Capamul Cars 2.0 dealership in Barobo, Surigao del Sur.
+      const systemPrompt = `You are "Capamul AI", official sales assistant for Capamul Cars 2.0 dealership in Barobo, Surigao del Sur.
 Location: Purok 2, Dapdap, Barobo, Surigao del Sur | Phone: 09686995654 | Web: https://capamulcars.com
 
 LIVE CAR INVENTORY:
 ${inventorySummary}
 
 RULES:
-1. Always state SRP (Total Price) and Down Payment (DP) in ₱.
+1. State exact SRP (Total Price) and Down Payment (DP) in ₱ for any car mentioned.
 2. Use emojis (🚗, 💰, 📍, 📞) appropriately.
 3. ${langInstruction}
-4. Keep response concise for Facebook Messenger chat.`;
+4. Directly answer the user's specific request (e.g. cheapest car, recommendations, budget, model details).`;
 
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       const result = await model.generateContent(`${systemPrompt}\n\nCustomer Message: "${userMessage}"\n\nYour reply:`);
@@ -134,9 +134,55 @@ RULES:
     }
   }
 
-  // Fallback Engine
-  console.log('[AI Agent] Using rule-based fallback response engine.');
+  // Enhanced Fallback Response Engine
+  console.log('[AI Agent] Using enhanced rule-based engine.');
   const msg = userMessage.toLowerCase();
+
+  // 1. CHEAPEST CAR / LOWEST PRICE INQUIRY
+  const isCheapestInquiry = /\b(cheap|cheapest|lowest|barato|pinaka barato|pinakamura|mura|lowest price|pinaka mura)\b/i.test(msg);
+  if (isCheapestInquiry && cars.length > 0) {
+    const availableOnly = cars.filter(c => (c.status || '').toLowerCase() === 'available');
+    const sorted = [...(availableOnly.length > 0 ? availableOnly : cars)].sort((a, b) => a.price - b.price);
+    const cheapestList = sorted.slice(0, 3).map(c => 
+      `🚗 *${c.name}* (${c.year})\n` +
+      `• Total Price (SRP): ${c.priceFormatted}\n` +
+      `• Down Payment (DP): ${c.downPaymentFormatted}\n` +
+      `• Status: ${c.status === 'Reserved' ? '🔒 Reserved (Waitlist available)' : '✅ Available'}\n` +
+      `• ${c.transmission} | ${c.mileage}`
+    ).join('\n\n');
+
+    if (lang === 'bisaya') {
+      return `Maayong adlaw! 👋 Naa diri ang pinaka-barato namong available units sa Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\nGusto ka mag-test drive o magpa-reserve sa bisan unsa nga unit?`;
+    }
+    if (lang === 'tagalog') {
+      return `Magandang araw! 👋 Narito ang aming pinakamura at pinakasulit na available units sa Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawagan/Mag-text: 09686995654\n\nGusto mo bang mag-test drive o magpa-reserve ng alinman sa mga ito?`;
+    }
+    return `Hello! 👋 Here are our most affordable vehicle options currently available at Capamul Cars:\n\n${cheapestList}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWould you like to schedule a test drive or make a reservation?`;
+  }
+
+  // 2. RECOMMENDATION / "GOOD AS NEW" / BEST CONDITION INQUIRY
+  const isRecommendInquiry = /\b(recommend|rekomenda|ika recommend|ika-recommend|good as new|best|nindot|maganda|suggest)\b/i.test(msg);
+  if (isRecommendInquiry && cars.length > 0) {
+    const availableOnly = cars.filter(c => (c.status || '').toLowerCase() === 'available');
+    const pool = availableOnly.length > 0 ? availableOnly : cars;
+    const topRecs = pool.slice(0, 3).map(c => 
+      `🚗 *${c.name}* (${c.year})\n` +
+      `• Total Price (SRP): ${c.priceFormatted}\n` +
+      `• Down Payment (DP): ${c.downPaymentFormatted}\n` +
+      `• Status: ${c.status === 'Reserved' ? '🔒 Reserved' : '✅ Available'}\n` +
+      `• ${c.transmission} | ${c.mileage}`
+    ).join('\n\n');
+
+    if (lang === 'bisaya') {
+      return `Maayong adlaw! 👋 Mao kini ang among gina-recommend nga mga units nga top condition ug "good as new" pa kaayo:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\nAsa man niani ang imong pinaka-ganahan?`;
+    }
+    if (lang === 'tagalog') {
+      return `Magandang araw! 👋 Ito ang aming inirerekomendang mga units na nasa top condition at "good as new" pa:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tumawag o mag-text: 09686995654\n\nAlin sa mga ito ang pinakagusto mo?`;
+    }
+    return `Hello! 👋 Here are our recommended top-condition, "good as new" vehicles available at Capamul Cars:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWhich of these would you like to check out?`;
+  }
+
+  // 3. SPECIFIC CAR MODEL/MAKE INQUIRY
   const matchedCars = cars.filter(c => 
     msg.includes(c.name.toLowerCase()) || 
     (c.make && msg.includes(c.make.toLowerCase())) || 
@@ -145,24 +191,32 @@ RULES:
 
   if (matchedCars.length > 0) {
     const list = matchedCars.slice(0, 3).map(c => 
-      `🚗 *${c.name}*\n• Total Price (SRP): ${c.priceFormatted}\n• Down Payment (DP): ${c.downPaymentFormatted}\n• Status: ${c.status}\n• ${c.transmission} | ${c.mileage}`
+      `🚗 *${c.name}* (${c.year})\n` +
+      `• Total Price (SRP): ${c.priceFormatted}\n` +
+      `• Down Payment (DP): ${c.downPaymentFormatted}\n` +
+      `• Status: ${c.status === 'Reserved' ? '🔒 Reserved (Waitlist open)' : '✅ Available'}\n` +
+      `• ${c.transmission} | ${c.mileage}`
     ).join('\n\n');
 
-    if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang mga detalye sa unit nga imong gipangutana sa Capamul Cars:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Tawag o Text: 09686995654\nGusto ba ka mag-schedule og test drive o magpa-reserve?`;
-    if (lang === 'tagalog') return `Magandang araw! 👋 Narito ang detalye ng sasakyan na iyong tinanong sa Capamul Cars:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Tumawag o mag-text: 09686995654\nGusto mo bang mag-schedule ng test drive o mag-reserve?`;
-    return `Hello! 👋 Here are the vehicle details you inquired about from Capamul Cars:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\nWould you like to schedule a test drive or make a reservation?`;
+    if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang mga detalye sa unit nga imong gipangutana:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Tawag o Text: 09686995654\n\nGusto ba ka mag-schedule og test drive o magpa-reserve?`;
+    if (lang === 'tagalog') return `Magandang araw! 👋 Narito ang detalye ng sasakyan na iyong tinanong:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Tumawag o mag-text: 09686995654\n\nGusto mo bang mag-schedule ng test drive o magpa-reserve?`;
+    return `Hello! 👋 Here are the vehicle details you inquired about:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWould you like to schedule a test drive or make a reservation?`;
   }
 
-  if (/\b(dp|down|price|how much|magkano|pila|tag pila)\b/i.test(msg)) {
+  // 4. DOWN PAYMENT / PRICE INQUIRY
+  if (/\b(dp|down|price|how much|magkano|pila|tag pila|presyo)\b/i.test(msg)) {
     const topCars = cars.slice(0, 4).map(c => `• *${c.name}*: DP ${c.downPaymentFormatted} (SRP ${c.priceFormatted})`).join('\n');
-    if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang uban namong available units ug ang ilang Down Payment (DP):\n\n${topCars}\n\n📍 Barobo, Surigao del Sur\n📞 09686995654\ni-reply lang ang car model para sa kompletong detalye!`;
-    if (lang === 'tagalog') return `Magandang araw! 👋 Narito ang aming mga available na units at ang kanilang Down Payment (DP):\n\n${topCars}\n\n📍 Barobo, Surigao del Sur\n📞 09686995654\ni-reply ang car model para sa kumpletong detalye!`;
-    return `Hello! 👋 Here are some of our top available cars with their Down Payment (DP) options:\n\n${topCars}\n\n📍 Barobo, Surigao del Sur\n📞 09686995654\nReply with the car model for complete details!`;
+    if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang uban namong available units ug ang ilang Down Payment (DP):\n\n${topCars}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654\ni-reply lang ang car model para sa kompletong detalye!`;
+    if (lang === 'tagalog') return `Magandang araw! 👋 Narito ang aming mga available na units at ang kanilang Down Payment (DP):\n\n${topCars}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654\ni-reply ang car model para sa kumpletong detalye!`;
+    return `Hello! 👋 Here are some of our top available cars with their Down Payment (DP) options:\n\n${topCars}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654\nReply with the car model for complete details!`;
   }
 
-  if (lang === 'bisaya') return `Maayong adlaw! 👋 Salamat sa pag-message sa Capamul Cars. Naa kay ${cars.length} ka available nga sasakyan sa among inventory nga adunay flexible down payment options!\n\ni-message lang kung unsa nga car model o budget imong gipangita, o tawag sa 📞 09686995654.`;
-  if (lang === 'tagalog') return `Magandang araw! 👋 Salamat sa pagmessage sa Capamul Cars. Mayroon kaming ${cars.length} na available na sasakyan na may flexible down payment options!\n\nI-message lang kung anong car model o budget ang gusto mo, o tumawag sa 📞 09686995654.`;
-  return `Hello! 👋 Thank you for messaging Capamul Cars. We have ${cars.length} available vehicles in our inventory with flexible down payment options!\n\nTell us which car model or budget you're looking for, or call us at 📞 09686995654 for fast assistance.`;
+  // 5. DEFAULT HELPFUL INVENTORY SUMMARY
+  const topAvailable = cars.slice(0, 4).map(c => `• *${c.name}*: DP ${c.downPaymentFormatted}`).join('\n');
+
+  if (lang === 'bisaya') return `Maayong adlaw! 👋 Salamat sa pag-message sa *Capamul Cars 2.0*!\n\nNaa mi ${cars.length} ka available nga units! Pila sa among popular models:\n${topAvailable}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\ni-message lang kung unsa nga car model o budget imong gipangita!`;
+  if (lang === 'tagalog') return `Magandang araw! 👋 Salamat sa pagmessage sa *Capamul Cars 2.0*!\n\nMayroon kaming ${cars.length} na available na units! Ilan sa aming popular models:\n${topAvailable}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tumawag/Mag-text: 09686995654\n\nI-message lang kung anong car model o budget ang gusto mo!`;
+  return `Hello! 👋 Thank you for messaging *Capamul Cars 2.0*!\n\nWe have ${cars.length} available vehicles! Here are some popular options:\n${topAvailable}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nTell us what car model or budget you're looking for!`;
 }
 
 async function sendTextMessage(recipientPsid, text) {
