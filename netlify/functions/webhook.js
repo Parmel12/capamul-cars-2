@@ -569,28 +569,12 @@ export const handler = async (event, context) => {
       if (body.object === 'page') {
         for (const entry of (body.entry || [])) {
           for (const webhookEvent of (entry.messaging || [])) {
-            // ── OWNER TAKEOVER: skip echo messages and PAUSE AI ──
+            // ── Skip echo messages (messages sent by page) without pausing ──
             if (webhookEvent.message?.is_echo === true) {
-              const customerPsid = webhookEvent.recipient?.id;
-              if (customerPsid) {
-                pausedUsers.set(customerPsid, Date.now());
-                console.log(`[FB Webhook] Owner replied manually — AI is pausing auto-reply for PSID ${customerPsid} for 2 hours.`);
-              }
               continue;
             }
 
             const senderPsid = webhookEvent.sender?.id;
-
-            // Check if AI is paused for this user
-            if (pausedUsers.has(senderPsid)) {
-              if (Date.now() - pausedUsers.get(senderPsid) < PAUSE_DURATION) {
-                console.log(`[FB Webhook] AI is paused for PSID ${senderPsid} due to owner takeover. Skipping.`);
-                continue; // Skip replying
-              } else {
-                pausedUsers.delete(senderPsid); // Expired pause
-              }
-            }
-
             const userQuery  = webhookEvent.message?.text || webhookEvent.postback?.payload;
 
             if (senderPsid && userQuery) {
