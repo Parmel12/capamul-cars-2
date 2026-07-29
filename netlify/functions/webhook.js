@@ -354,14 +354,15 @@ ${inventoryList}
       })
     });
     if (!res.ok) { 
+      const errText = await res.text();
       console.error('[Gemini] HTTP', res.status); 
-      return null;
+      return `DEBUG ERROR: Gemini returned ${res.status}: ${errText.substring(0, 150)}`;
     }
     const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'DEBUG ERROR: Gemini returned empty text.';
   } catch (err) {
     console.error('[Gemini Error]:', err.message);
-    return null;
+    return `DEBUG ERROR: Exception ${err.message}`;
   }
 }
 
