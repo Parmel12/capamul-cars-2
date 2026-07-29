@@ -353,12 +353,16 @@ ${inventoryList}
         generationConfig: { temperature: 0.5, maxOutputTokens: 600 }
       })
     });
-    if (!res.ok) { console.error('[Gemini] HTTP', res.status); return null; }
+    if (!res.ok) { 
+      const errText = await res.text();
+      console.error('[Gemini] HTTP', res.status); 
+      return `DEBUG ERROR: Gemini returned ${res.status}: ${errText.substring(0, 100)}`; 
+    }
     const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'DEBUG ERROR: Gemini returned empty text.';
   } catch (err) {
     console.error('[Gemini Error]:', err.message);
-    return null;
+    return `DEBUG ERROR: ${err.message}`;
   }
 }
 
@@ -374,7 +378,7 @@ async function generateAutoReply(userMessage, senderPsid) {
   }
 
   const cars     = await getAvailableCars();
-  const apiKey   = process.env.GEMINI_API_KEY;
+  const apiKey   = (process.env.GEMINI_API_KEY || '').trim();
   const intent   = detectIntent(userMessage);
   const userName = senderPsid ? await getUserProfile(senderPsid) : null;
   const greeting = getTimeGreeting('english', userName);
@@ -399,7 +403,13 @@ async function generateAutoReply(userMessage, senderPsid) {
       carsForGemini = cars.slice(0, 3);
     }
     const aiText = await callGeminiRestApi(apiKey, userMessage, carsForGemini, intent, userName);
-    if (aiText) { console.log('[AI] Gemini OK.'); return aiText; }
+    if (aiText) { 
+      if (aiText.startsWith('DEBUG ERROR:')) return aiText; // return error to messenger
+      console.log('[AI] Gemini OK.'); 
+      return aiText; 
+    }
+  } else {
+     return `DEBUG ERROR: Gemini API Key is missing or invalid. Key is: ${apiKey ? apiKey.substring(0, 6) + '...' : 'UNDEFINED'}`;
   }
 
   // ── Smart Fallback Engine ─────────────────────────────────────
