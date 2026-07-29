@@ -203,7 +203,7 @@ OPEN FOR LOW DP (SUBJECT FOR APPROVAL)
 ➡️ NO ISSUES`
   ).join('\n\n');
 
-  return `${countHeader}\n\nHere are 2 of our top featured units:\n\n${list}\n\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nTo help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?`;
+  return `${countHeader}\n\nHere are 2 of our top featured units:\n\n${list}\n\n🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nTo help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?`;
 }
 
 // ── Gemini AI Call ────────────────────────────────────────────────
@@ -242,6 +242,7 @@ Always identify the language the customer is using (e.g., English, Tagalog, Bisa
 CONTACT INFO BLOCK
 Whenever you provide specific vehicle details or list vehicles, ALWAYS append this exact text at the very bottom of your message:
 
+🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)
 📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur
 📞 Tawag/Text: 09109025461 / 09686995654
 Gusto ba ka mag-schedule og test drive o magpa-reserve?
@@ -330,6 +331,7 @@ OPEN FOR LOW DP
 ➡️STATUS: AVAILABLE
 ➡️NO ISSUES
 
+🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)
 📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur
 📞 Tawag/Text: 09109025461 / 09686995654
 Gusto ba ka mag-schedule og test drive o magpa-reserve?
