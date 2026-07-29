@@ -240,18 +240,23 @@ async function loadCarsList() {
 
   try {
     const cars = await window.api.getCars();
-    // Show available and reserved cars; hide only sold ones
-    const visibleCars = cars.filter(c => ['available','reserved'].includes((c.status||'').toLowerCase()));
-    if (visibleCars.length === 0) {
-      container.innerHTML = '<div class="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">No vehicles currently available. Check back soon!</p></div>';
-      return;
-    }
-
-    container.innerHTML = visibleCars.map(car => getCarListItemHtml(car)).join('');
-    if(window.lucide) window.lucide.createIcons();
+    renderCarsList(cars);
   } catch(e) {
     container.innerHTML = '<div class="text-center py-10 bg-red-50 text-red-600 rounded-xl"><p>Failed to load vehicles. Please try again later.</p></div>';
   }
+}
+
+function renderCarsList(cars) {
+  const container = document.getElementById('cars-list-items');
+  if (!container) return;
+  // Show available and reserved cars; hide only sold ones
+  const visibleCars = cars.filter(c => ['available','reserved'].includes((c.status||'').toLowerCase()));
+  if (visibleCars.length === 0) {
+    container.innerHTML = '<div class="text-center py-10 bg-white rounded-xl border border-dashed border-gray-300"><p class="text-gray-500">No vehicles currently available. Check back soon!</p></div>';
+    return;
+  }
+  container.innerHTML = visibleCars.map(car => getCarListItemHtml(car)).join('');
+  if(window.lucide) window.lucide.createIcons();
 }
 
 // Helper: render a single card inside a carousel slot
@@ -268,15 +273,22 @@ async function loadFeaturedCars() {
 
   try {
     const cars = await window.api.getFeaturedCars();
-    if (cars.length === 0) {
-      container.innerHTML = '<div class="py-12 text-center text-gray-400 border border-dashed rounded-xl w-full"><p class="text-sm">No featured vehicles set yet. Add some in the admin Content Management tab.</p></div>';
-      return;
-    }
-    container.innerHTML = cars.map(car => getCarouselCardHtml(car)).join('');
-    if (window.lucide) window.lucide.createIcons();
+    renderFeaturedCars(cars);
   } catch(e) {
     container.innerHTML = '<div class="py-10 text-center text-red-500 text-sm w-full">Failed to load featured vehicles.</div>';
   }
+}
+
+function renderFeaturedCars(allCars) {
+  const container = document.getElementById('featured-cars-grid');
+  if (!container) return;
+  const cars = allCars.filter(c => ['available','reserved'].includes((c.status||'').toLowerCase())).slice(0, 10);
+  if (cars.length === 0) {
+    container.innerHTML = '<div class="py-12 text-center text-gray-400 border border-dashed rounded-xl w-full"><p class="text-sm">No featured vehicles set yet. Add some in the admin Content Management tab.</p></div>';
+    return;
+  }
+  container.innerHTML = cars.map(car => getCarouselCardHtml(car)).join('');
+  if (window.lucide) window.lucide.createIcons();
 }
 
 async function loadNewArrivals() {
@@ -285,35 +297,48 @@ async function loadNewArrivals() {
 
   try {
     const cars = await window.api.getNewArrivals(6);
-    if (cars.length === 0) {
-      container.innerHTML = '<div class="text-center py-10 text-gray-400 text-sm w-full border border-dashed rounded-xl">No new arrivals yet.</div>';
-    } else {
-      container.innerHTML = cars.map(car => getCarouselCardHtml(car)).join('');
-    }
-    if (window.lucide) window.lucide.createIcons();
+    renderNewArrivals(cars);
   } catch(e) {
     container.innerHTML = '<div class="text-center py-10 text-red-500 text-sm w-full">Failed to load new arrivals.</div>';
   }
 }
 
+function renderNewArrivals(allCars) {
+  const container = document.getElementById('new-arrivals-grid');
+  if (!container) return;
+  const cars = allCars.filter(c => ['available','reserved'].includes((c.status||'').toLowerCase())).slice(0, 6);
+  if (cars.length === 0) {
+    container.innerHTML = '<div class="text-center py-10 text-gray-400 text-sm w-full border border-dashed rounded-xl">No new arrivals yet.</div>';
+  } else {
+    container.innerHTML = cars.map(car => getCarouselCardHtml(car)).join('');
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
 async function loadDiscountedCars() {
+  try {
+    const cars = await window.api.getDiscountedCars(6);
+    renderDiscountedCars(cars);
+  } catch(e) {
+    const section = document.getElementById('section-discounted');
+    if (section) section.style.display = 'none';
+  }
+}
+
+function renderDiscountedCars(allCars) {
   const section   = document.getElementById('section-discounted');
   const container = document.getElementById('discounted-cars-grid');
   if (!container) return;
 
-  try {
-    const cars = await window.api.getDiscountedCars(6);
-    if (cars.length === 0) {
-      // Hide the section entirely when there are no discounts
-      if (section) section.style.display = 'none';
-      return;
-    }
-    if (section) section.style.display = '';  // Show the section
-    container.innerHTML = cars.map(car => getCarouselCardHtml(car)).join('');
-    if (window.lucide) window.lucide.createIcons();
-  } catch(e) {
+  const cars = allCars.filter(c => !!c.original_price && Number(c.original_price) > Number(c.price)).slice(0, 6);
+  if (cars.length === 0) {
+    // Hide the section entirely when there are no discounts
     if (section) section.style.display = 'none';
+    return;
   }
+  if (section) section.style.display = '';  // Show the section
+  container.innerHTML = cars.map(car => getCarouselCardHtml(car)).join('');
+  if (window.lucide) window.lucide.createIcons();
 }
 
 async function loadHeroImage() {
@@ -348,11 +373,25 @@ initApp = async function() {
   loadFeaturedCars();
   loadNewArrivals();
   loadDiscountedCars();
+
+  // Background revalidation: re-fetch from Supabase after 1.5s to ensure all devices see latest cars
+  setTimeout(() => {
+    if (window.api) window.api.getCars(true); // force refresh — fires cars-updated if data changed
+  }, 1500);
 };
 
-window.addEventListener('cars-updated', () => {
-  loadCarsList();
-  loadFeaturedCars();
-  loadNewArrivals();
-  loadDiscountedCars();
+window.addEventListener('cars-updated', (e) => {
+  // e.detail contains the fresh car array from Supabase — skip cache and re-render directly
+  const freshCars = e && e.detail;
+  if (freshCars && Array.isArray(freshCars)) {
+    renderCarsList(freshCars);
+    renderFeaturedCars(freshCars);
+    renderNewArrivals(freshCars);
+    renderDiscountedCars(freshCars);
+  } else {
+    loadCarsList();
+    loadFeaturedCars();
+    loadNewArrivals();
+    loadDiscountedCars();
+  }
 });
