@@ -153,19 +153,19 @@ function matchCarsByModel(userMessage, cars) {
     const model = normalize(car.model || '');
     const name  = normalize(car.name  || '');
     let score = 0;
-    for (const w of model.split(/[\s\-\/]+/).filter(w => w.length > 2)) {
+    for (const w of model.split(/[\s\-\/]+/).filter(w => w.length >= 2)) {
       if (new RegExp(`\\b${w}\\b`).test(lower)) score += 10;
     }
-    for (const w of make.split(/[\s\-\/]+/).filter(w => w.length > 2)) {
+    for (const w of make.split(/[\s\-\/]+/).filter(w => w.length >= 2)) {
       if (new RegExp(`\\b${w}\\b`).test(lower)) score += 5;
     }
     const skip = new Set(['the','and','top','high','end','series','line','new','used']);
-    for (const w of name.split(/[\s\-\/]+/).filter(w => w.length > 2 && !skip.has(w))) {
+    for (const w of name.split(/[\s\-\/]+/).filter(w => w.length >= 2 && !skip.has(w))) {
       if (lower.includes(w)) score += 2;
     }
     return { car, score };
   });
-  return scored.filter(s => s.score >= 5).sort((a, b) => b.score - a.score).map(s => s.car);
+  return scored.filter(s => s.score >= 2).sort((a, b) => b.score - a.score).map(s => s.car);
 }
 
 // ── Gemini AI Call ────────────────────────────────────────────────
@@ -372,37 +372,40 @@ ${inventoryList}
 
     const endpoints = [
       'v1beta/models/gemini-flash-latest',
-      'v1beta/models/gemini-2.5-flash',
-      'v1beta/models/gemini-pro-latest',
-      'v1/models/gemini-flash-latest',
-      'v1beta/models/gemini-1.5-flash'
+      'v1beta/models/gemini-2.0-flash'
     ];
 
-    let lastError = 'DEBUG ERROR: No endpoints succeeded.';
-    
     for (const ep of endpoints) {
-      const res = await fetch(`https://generativelanguage.googleapis.com/${ep}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply:` }] }],
-          generationConfig: { temperature: 0.5 }
-        })
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'DEBUG ERROR: Gemini returned empty text.';
-      } else {
-        const errText = await res.text();
-        console.error(`[Gemini] HTTP ${res.status} for ${ep}`);
-        lastError = `DEBUG ERROR: Gemini returned ${res.status} for ${ep}: ${errText.substring(0, 100)}`;
+      let attempts = 0;
+      while (attempts < 2) {
+        attempts++;
+        const res = await fetch(`https://generativelanguage.googleapis.com/${ep}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply:` }] }],
+            generationConfig: { temperature: 0.3 }
+          })
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (replyText) return replyText;
+        } else if (res.status === 429) {
+          console.warn(`[Gemini Rate Limit 429] Waiting 1.5s before retry...`);
+          await new Promise(r => setTimeout(r, 1500));
+        } else {
+          const errText = await res.text();
+          console.error(`[Gemini Error] ${ep} HTTP ${res.status}: ${errText.substring(0, 150)}`);
+          break; // Try next endpoint if not 429
+        }
       }
     }
-    return lastError;
+    return null; // Fallback gracefully to smart engine instead of showing raw debug errors to customer
   } catch (err) {
-    console.error('[Gemini Error]:', err.message);
-    return `DEBUG ERROR: Exception ${err.message}`;
+    console.error('[Gemini Exception]:', err.message);
+    return null;
   }
 }
 
@@ -427,21 +430,24 @@ async function generateAutoReply(userMessage, senderPsid) {
 
   // ── Try Gemini AI first ───────────────────────────────────────
   if (apiKey) {
-    let carsForGemini = cars;
-    if (intent === 'general') {
-      const matched = matchCarsByModel(userMessage, cars);
-      if (matched.length > 0) carsForGemini = matched.slice(0, 5);
-    } else if (intent === 'cheapest') {
-      carsForGemini = [...cars].sort((a, b) => a.price - b.price).slice(0, 6);
-    } else if (intent === 'transmission') {
-      const isAuto = /\b(automatic|matic|a\/t)\b/i.test(userMessage.toLowerCase());
-      const filtered = cars.filter(c => isAuto
-        ? (c.transmission || '').toLowerCase().includes('auto')
-        : (c.transmission || '').toLowerCase().includes('manual'));
-      if (filtered.length > 0) carsForGemini = filtered.slice(0, 6);
-    } else if (['financing','financing_complex','financing_concern','location','reservation','contact','website'].includes(intent)) {
-      carsForGemini = cars.slice(0, 3);
+    const matched = matchCarsByModel(userMessage, cars);
+    let carsForGemini = matched;
+
+    if (carsForGemini.length === 0) {
+      if (intent === 'cheapest') {
+        carsForGemini = [...cars].sort((a, b) => a.price - b.price).slice(0, 6);
+      } else if (intent === 'transmission') {
+        const isAuto = /\b(automatic|matic|a\/t)\b/i.test(userMessage.toLowerCase());
+        carsForGemini = cars.filter(c => isAuto
+          ? (c.transmission || '').toLowerCase().includes('auto')
+          : (c.transmission || '').toLowerCase().includes('manual')).slice(0, 6);
+      } else {
+        carsForGemini = cars.slice(0, 8);
+      }
+    } else {
+      carsForGemini = carsForGemini.slice(0, 8);
     }
+
     const aiText = await callGeminiRestApi(apiKey, userMessage, carsForGemini, intent, userName);
     if (aiText) { 
       console.log('[AI] Gemini OK.'); 
