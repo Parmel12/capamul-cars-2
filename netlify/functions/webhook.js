@@ -97,7 +97,8 @@ async function generateAutoReply(userMessage) {
   const lang = detectLanguage(userMessage);
   console.log(`[AI Agent] Query: "${userMessage}" | Language: ${lang} | Cars: ${cars.length}`);
 
-  if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE' && apiKey.length > 10) {
+  // Only call Gemini if key starts with AIza (valid Gemini API key format)
+  if (apiKey && apiKey.startsWith('AIza')) {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
       const inventorySummary = cars.length > 0
@@ -182,7 +183,28 @@ RULES:
     return `Hello! 👋 Here are our recommended top-condition, "good as new" vehicles available at Capamul Cars:\n\n${topRecs}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWhich of these would you like to check out?`;
   }
 
-  // 3. SPECIFIC CAR MODEL/MAKE INQUIRY
+  // 3. TRANSMISSION INQUIRY (AUTOMATIC / MANUAL)
+  const isTransmissionInquiry = /\b(automatic|manual|matic|a\/t|m\/t|at|mt)\b/i.test(msg);
+  if (isTransmissionInquiry && cars.length > 0) {
+    const isAuto = /\b(automatic|matic|a\/t|at)\b/i.test(msg);
+    const transFiltered = cars.filter(c => 
+      isAuto ? (c.transmission || '').toLowerCase().includes('auto') : (c.transmission || '').toLowerCase().includes('manual')
+    );
+    const pool = transFiltered.length > 0 ? transFiltered : cars;
+    const transList = pool.slice(0, 3).map(c =>
+      `🚗 *${c.name}* (${c.year})\n` +
+      `• Total Price (SRP): ${c.priceFormatted}\n` +
+      `• Down Payment (DP): ${c.downPaymentFormatted}\n` +
+      `• Transmission: ${c.transmission}\n` +
+      `• Status: ${c.status === 'Reserved' ? '🔒 Reserved' : '✅ Available'}`
+    ).join('\n\n');
+
+    if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang among mga ${isAuto ? 'Automatic' : 'Manual'} units:\n\n${transList}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654`;
+    if (lang === 'tagalog') return `Magandang araw! 👋 Narito ang aming mga ${isAuto ? 'Automatic' : 'Manual'} units:\n\n${transList}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654`;
+    return `Hello! 👋 Here are our ${isAuto ? 'Automatic' : 'Manual'} transmission vehicles:\n\n${transList}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654`;
+  }
+
+  // 4. SPECIFIC CAR MODEL/MAKE INQUIRY
   const matchedCars = cars.filter(c => 
     msg.includes(c.name.toLowerCase()) || 
     (c.make && msg.includes(c.make.toLowerCase())) || 
@@ -203,7 +225,7 @@ RULES:
     return `Hello! 👋 Here are the vehicle details you inquired about:\n\n${list}\n\n📍 Showroom: Barobo, Surigao del Sur\n📞 Call/SMS: 09686995654\n\nWould you like to schedule a test drive or make a reservation?`;
   }
 
-  // 4. DOWN PAYMENT / PRICE INQUIRY
+  // 5. DOWN PAYMENT / PRICE INQUIRY
   if (/\b(dp|down|price|how much|magkano|pila|tag pila|presyo)\b/i.test(msg)) {
     const topCars = cars.slice(0, 4).map(c => `• *${c.name}*: DP ${c.downPaymentFormatted} (SRP ${c.priceFormatted})`).join('\n');
     if (lang === 'bisaya') return `Maayong adlaw! 👋 Naa diri ang uban namong available units ug ang ilang Down Payment (DP):\n\n${topCars}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654\ni-reply lang ang car model para sa kompletong detalye!`;
@@ -211,7 +233,7 @@ RULES:
     return `Hello! 👋 Here are some of our top available cars with their Down Payment (DP) options:\n\n${topCars}\n\n📍 Barobo, Surigao del Sur | 📞 09686995654\nReply with the car model for complete details!`;
   }
 
-  // 5. DEFAULT HELPFUL INVENTORY SUMMARY
+  // 6. DEFAULT HELPFUL INVENTORY SUMMARY
   const topAvailable = cars.slice(0, 4).map(c => `• *${c.name}*: DP ${c.downPaymentFormatted}`).join('\n');
 
   if (lang === 'bisaya') return `Maayong adlaw! 👋 Salamat sa pag-message sa *Capamul Cars 2.0*!\n\nNaa mi ${cars.length} ka available nga units! Pila sa among popular models:\n${topAvailable}\n\n📍 Showroom: Purok 2, Dapdap, Barobo, Surigao del Sur\n📞 Tawag/Text: 09686995654\n\ni-message lang kung unsa nga car model o budget imong gipangita!`;
