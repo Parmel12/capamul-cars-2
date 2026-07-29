@@ -177,9 +177,20 @@ function matchCarsByModel(userMessage, cars) {
   return scored.filter(s => s.score >= 2).sort((a, b) => b.score - a.score).map(s => s.car);
 }
 
-function formatCarsFallback(matchedCars, userName) {
-  const greeting = userName ? `Hello ${userName}! 👋` : `Hello! 👋`;
-  const list = matchedCars.slice(0, 3).map(c => 
+function formatCarsFallback(matchedCars, userMessage, userName) {
+  let brandName = '';
+  if (matchedCars.length > 0) {
+    brandName = matchedCars[0].make || '';
+  }
+
+  const countHeader = brandName 
+    ? `We currently have ${matchedCars.length} available ${brandName} unit${matchedCars.length > 1 ? 's' : ''} in our CAPAMUL CARS 2.0 inventory! 🚗`
+    : `Here are our top available units from CAPAMUL CARS 2.0! 🚗`;
+
+  // Show max 2 featured units to keep message concise
+  const topUnits = matchedCars.slice(0, 2);
+
+  const list = topUnits.map(c => 
 `🔥 ${c.name} 🔥
 💰 ${c.downPaymentFormatted} DOWNPAYMENT ONLY 💰
 💰 ${c.priceFormatted} ONLY IF CASH, NEGOTIABLE 💰
@@ -192,7 +203,7 @@ OPEN FOR LOW DP (SUBJECT FOR APPROVAL)
 ➡️ NO ISSUES`
   ).join('\n\n');
 
-  return `${greeting} Here are the available units from our live inventory matching your inquiry:\n\n${list}\n\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\nGusto ba ka mag-schedule og test drive o magpa-reserve?`;
+  return `${countHeader}\n\nHere are 2 of our top featured units:\n\n${list}\n\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nTo help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?`;
 }
 
 // ── Gemini AI Call ────────────────────────────────────────────────
@@ -380,13 +391,16 @@ Never make up financing information.
 Never promise approval.
 Never pressure customers into buying.
 
-SALES STYLE
-Always guide the conversation naturally.
+GREETING & BRAND RESPONSE RULES:
+1. GREETING: State the business name: "Welcome to CAPAMUL CARS 2.0! 👋". NEVER repeat the greeting ("Good day" or "Welcome") in follow-up messages during the same chat. Keep responses clean and professional.
+2. BRAND SUMMARY: When a customer asks about a brand (e.g. Mitsubishi, Toyota, Nissan, Suzuki, Honda), FIRST state the total count of available units for that brand (e.g., "We currently have 14 available Mitsubishi units in our CAPAMUL CARS 2.0 inventory!").
+3. CONCISE MESSAGES: Do NOT send long walls of text. Show ONLY 2 top featured matching units from the LIVE INVENTORY using the exact CAR DETAILS FORMATTING emoji template.
+4. FOLLOW-UP QUESTION: After listing the 2 top units, ask clarifying follow-up questions to narrow down their specific preference (e.g., "To help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?").
 
 INVENTORY MATCHING RULES:
 1. The LIVE INVENTORY provided below contains all available and reserved vehicles.
-2. If a customer asks about a BRAND or MAKE (such as Mitsubishi, Toyota, Nissan, Suzuki, Honda, Hyundai), check if ANY car in the LIVE INVENTORY belongs to that make/brand. If there are vehicles matching that make, list ALL of them. NEVER say a brand/make is "out of stock" if there are cars of that make in the LIVE INVENTORY!
-3. If a customer asks for a specific model (such as Wigo, Xpander, Montero, Mirage, Vios, Fortuner), list ALL matching available units from the LIVE INVENTORY.
+2. If a customer asks about a BRAND or MAKE (such as Mitsubishi, Toyota, Nissan, Suzuki, Honda, Hyundai), check if ANY car in the LIVE INVENTORY belongs to that make/brand. If there are vehicles matching that make, list the top 2 units and state the total count. NEVER say a brand/make is "out of stock" if there are cars of that make in the LIVE INVENTORY!
+3. If a customer asks for a specific model (such as Wigo, Xpander, Montero, Mirage, Vios, Fortuner), list the matching available units from the LIVE INVENTORY.
 4. Only say an item, brand, or model is out of stock if ZERO cars in the LIVE INVENTORY match that brand or model.
 
 DETECTED INTENT: ${intent}
@@ -488,7 +502,7 @@ async function generateAutoReply(userMessage, senderPsid) {
 
   // 1. If specific cars matched the user query (e.g. Mitsubishi, Wigo, Toyota, etc.), return them immediately!
   if (matched.length > 0) {
-    return formatCarsFallback(matched, userName);
+    return formatCarsFallback(matched, userMessage, userName);
   }
 
   if (intent === 'greeting') return greeting;
