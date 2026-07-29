@@ -9,6 +9,11 @@ const CONTACT2 = '09686995654';
 const SHOWROOM = 'Purok 2, Dapdap, Barobo, Surigao del Sur';
 const WEBSITE  = 'https://capamulcars2.netlify.app';
 
+// ── In-Memory State for Owner Takeover ────────────────────────────
+// In a serverless environment, this persists only while the container is warm.
+const pausedUsers = new Map();
+const PAUSE_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+
 const sbHeaders = {
   'apikey': SUPABASE_ANON_KEY,
   'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -62,6 +67,43 @@ async function getAISettings() {
     if (data && data.length > 0 && data[0].value) return data[0].value;
     return { enabled: true };
   } catch { return { enabled: true }; }
+}
+
+async function getUserProfile(psid) {
+  try {
+    const token = process.env.FB_PAGE_ACCESS_TOKEN || FB_PAGE_ACCESS_TOKEN;
+    const res = await fetch(`https://graph.facebook.com/${psid}?fields=first_name&access_token=${token}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.first_name;
+    }
+  } catch (e) {
+    console.error('Error fetching user profile:', e);
+  }
+  return null;
+}
+
+function getTimeGreeting(lang, name) {
+  const hour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' })).getHours();
+  let timeOfDay = 'morning';
+  if (hour >= 12 && hour < 18) timeOfDay = 'afternoon';
+  else if (hour >= 18) timeOfDay = 'evening';
+
+  const n = name ? ` ${name}` : '';
+
+  if (lang === 'bisaya') {
+    if (timeOfDay === 'morning') return `Maayong buntag${n}!`;
+    if (timeOfDay === 'afternoon') return `Maayong hapon${n}!`;
+    return `Maayong gabii${n}!`;
+  }
+  if (lang === 'tagalog') {
+    if (timeOfDay === 'morning') return `Magandang umaga${n}!`;
+    if (timeOfDay === 'afternoon') return `Magandang hapon${n}!`;
+    return `Magandang gabi${n}!`;
+  }
+  if (timeOfDay === 'morning') return `Good morning${n}!`;
+  if (timeOfDay === 'afternoon') return `Good afternoon${n}!`;
+  return `Good evening${n}!`;
 }
 
 // ── Language Detection ────────────────────────────────────────────
@@ -157,7 +199,7 @@ function carDetail(c) {
 const footer = `\n- Tel/SMS: ${CONTACT1}\n- Tel/SMS: ${CONTACT2}\n- Showroom: ${SHOWROOM}\n- View our full inventory: ${WEBSITE}`;
 
 // ── Gemini AI Call ────────────────────────────────────────────────
-async function callGeminiRestApi(apiKey, userMessage, cars, lang, intent) {
+async function callGeminiRestApi(apiKey, userMessage, cars, lang, intent, userName) {
   try {
     const inventoryList = cars.length > 0
       ? cars.map(c => `- ${c.name} (${c.year}) | SRP: ${c.priceFormatted} | DP: ${c.downPaymentFormatted} | ${c.status} | ${c.transmission} | ${c.mileage}`).join('\n')
@@ -168,6 +210,8 @@ async function callGeminiRestApi(apiKey, userMessage, cars, lang, intent) {
       tagalog: 'Reply ONLY in natural fluent Filipino/Tagalog. Do NOT use Bisaya. Use: magkano, nasaan, po, opo, pwede, gusto, paano, salamat.',
       english: 'Reply in clear, friendly, professional English.'
     }[lang] || 'Reply in English.';
+
+    const greeting = getTimeGreeting(lang, userName);
 
     const systemPrompt = `You are the official Facebook Messenger AI assistant for Capamul Cars 2.0 — a pre-owned car dealership in Barobo, Surigao del Sur, Philippines. Sign all messages as "- Capamul Team".
 
@@ -219,7 +263,7 @@ IMPORTANT RULES:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Team reply:` }] }],
+        contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Team reply (start with "${greeting}" if it makes sense):` }] }],
         generationConfig: { temperature: 0.7, maxOutputTokens: 600 }
       })
     });
@@ -233,23 +277,25 @@ IMPORTANT RULES:
 }
 
 // ── Main Reply Generator ──────────────────────────────────────────
-async function generateAutoReply(userMessage) {
+async function generateAutoReply(userMessage, senderPsid) {
   const settings = await getAISettings();
   if (settings && settings.enabled === false) return null;
+
+  const lang   = detectLanguage(userMessage);
 
   // ── OFF-TOPIC CHECK: do not reply at all ─────────────────────
   if (isOffTopic(userMessage)) {
     console.log('[AI] Off-topic message detected, skipping reply.');
-    const lang = detectLanguage(userMessage);
     if (lang === 'bisaya') return `Pasensya, wala kami makatulong niana. Ang among espesyalidad mao ang mga sasakyan!\n\nBrowse lang ang among inventory sa: ${WEBSITE}\n\nDunay bisan unsa pa ka pangutana bahin sa mga kotse? Puwede lang mag-message!\n\n- Capamul Team`;
     if (lang === 'tagalog') return `Paumanhin, ang aming expertise ay tungkol sa mga sasakyan lamang.\n\nI-browse ang aming inventory sa: ${WEBSITE}\n\nMay katanungan ka ba tungkol sa aming mga kotse? Handa kaming sumagot!\n\n- Capamul Team`;
     return `We specialize in pre-owned vehicles at Capamul Cars 2.0!\n\nBrowse our full inventory at: ${WEBSITE}\n\nFeel free to ask us anything about our cars!\n\n- Capamul Team`;
   }
 
-  const cars   = await getAvailableCars();
-  const apiKey = process.env.GEMINI_API_KEY;
-  const lang   = detectLanguage(userMessage);
-  const intent = detectIntent(userMessage);
+  const cars     = await getAvailableCars();
+  const apiKey   = process.env.GEMINI_API_KEY;
+  const intent   = detectIntent(userMessage);
+  const userName = senderPsid ? await getUserProfile(senderPsid) : null;
+  const greeting = getTimeGreeting(lang, userName);
 
   console.log(`[AI] msg="${userMessage}" | lang=${lang} | intent=${intent} | cars=${cars.length}`);
 
@@ -270,7 +316,7 @@ async function generateAutoReply(userMessage) {
     } else if (['financing','financing_complex','financing_concern','location','reservation','contact','website'].includes(intent)) {
       carsForGemini = cars.slice(0, 3);
     }
-    const aiText = await callGeminiRestApi(apiKey, userMessage, carsForGemini, lang, intent);
+    const aiText = await callGeminiRestApi(apiKey, userMessage, carsForGemini, lang, intent, userName);
     if (aiText) { console.log('[AI] Gemini OK.'); return aiText; }
   }
 
@@ -280,9 +326,9 @@ async function generateAutoReply(userMessage) {
   // GREETING
   if (intent === 'greeting') {
     const topCars = cars.slice(0, 3).map(c => `- *${c.name}* -- DP ${c.downPaymentFormatted}`).join('\n');
-    if (lang === 'bisaya') return `Maayong adlaw! Welcome sa *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nUnsay makatabang nako kaninyo?\n\nPila sa among popular units:\n${topCars}${footer}\n\nI-reply lang ang car model o budget nga imong gipangita!\n\n- Capamul Team`;
-    if (lang === 'tagalog') return `Magandang araw! Maligayang pagdating sa *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nPaano kita matutulungan?\n\nIlan sa aming sikat na units:\n${topCars}${footer}\n\nI-reply ang car model o budget na hinahanap mo!\n\n- Capamul Team`;
-    return `Hello! Welcome to *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nHow can we help you today?\n\nSome popular units:\n${topCars}${footer}\n\nTell us the car model or your budget to get started!\n\n- Capamul Team`;
+    if (lang === 'bisaya') return `${greeting} Welcome sa *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nUnsay makatabang nako kaninyo?\n\nPila sa among popular units:\n${topCars}${footer}\n\nI-reply lang ang car model o budget nga imong gipangita!\n\n- Capamul Team`;
+    if (lang === 'tagalog') return `${greeting} Maligayang pagdating sa *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nPaano kita matutulungan?\n\nIlan sa aming sikat na units:\n${topCars}${footer}\n\nI-reply ang car model o budget na hinahanap mo!\n\n- Capamul Team`;
+    return `${greeting} Welcome to *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nHow can we help you today?\n\nSome popular units:\n${topCars}${footer}\n\nTell us the car model or your budget to get started!\n\n- Capamul Team`;
   }
 
   // LOCATION
@@ -377,9 +423,9 @@ async function generateAutoReply(userMessage) {
 
   // DEFAULT
   const topCars = cars.slice(0, 4).map(c => `- *${c.name}*: DP ${c.downPaymentFormatted}`).join('\n');
-  if (lang === 'bisaya') return `Maayong adlaw! Mao ni ang *Capamul Cars 2.0*!\n\nNaa mi ${cars.length} ka available nga units:\n${topCars}${footer}\n\nI-reply lang kung unsa ang imong gipangita:\n- Car model o brand\n- Budget o DP range\n- Automatic o Manual?\n- Location, financing, o reservation\n\n- Capamul Team`;
-  if (lang === 'tagalog') return `Magandang araw! Ito ang *Capamul Cars 2.0*!\n\nMayroon kaming ${cars.length} available na units:\n${topCars}${footer}\n\nI-reply kung ano ang hinahanap mo:\n- Car model o brand\n- Budget o DP range\n- Automatic o Manual?\n- Location, financing, o reservation\n\n- Capamul Team`;
-  return `Hello! Welcome to *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nWe have ${cars.length} available vehicles:\n${topCars}${footer}\n\nTell us what you're looking for:\n- A specific car model or brand\n- Your budget or DP range\n- Automatic or Manual?\n- Location, financing, or reservation info\n\n- Capamul Team`;
+  if (lang === 'bisaya') return `${greeting} Mao ni ang *Capamul Cars 2.0*!\n\nNaa mi ${cars.length} ka available nga units:\n${topCars}${footer}\n\nI-reply lang kung unsa ang imong gipangita:\n- Car model o brand\n- Budget o DP range\n- Automatic o Manual?\n- Location, financing, o reservation\n\n- Capamul Team`;
+  if (lang === 'tagalog') return `${greeting} Ito ang *Capamul Cars 2.0*!\n\nMayroon kaming ${cars.length} available na units:\n${topCars}${footer}\n\nI-reply kung ano ang hinahanap mo:\n- Car model o brand\n- Budget o DP range\n- Automatic o Manual?\n- Location, financing, o reservation\n\n- Capamul Team`;
+  return `${greeting} Welcome to *Capamul Cars 2.0* -- "All in BEST Condition!"\n\nWe have ${cars.length} available vehicles:\n${topCars}${footer}\n\nTell us what you're looking for:\n- A specific car model or brand\n- Your budget or DP range\n- Automatic or Manual?\n- Location, financing, or reservation info\n\n- Capamul Team`;
 }
 
 async function sendTextMessage(recipientPsid, text) {
@@ -416,18 +462,33 @@ export const handler = async (event, context) => {
       if (body.object === 'page') {
         for (const entry of (body.entry || [])) {
           for (const webhookEvent of (entry.messaging || [])) {
-            // ── OWNER TAKEOVER: skip echo messages (owner typed a reply) ──
+            // ── OWNER TAKEOVER: skip echo messages and PAUSE AI ──
             if (webhookEvent.message?.is_echo === true) {
-              console.log('[FB Webhook] Owner replied manually — AI is pausing auto-reply for this conversation.');
+              const customerPsid = webhookEvent.recipient?.id;
+              if (customerPsid) {
+                pausedUsers.set(customerPsid, Date.now());
+                console.log(`[FB Webhook] Owner replied manually — AI is pausing auto-reply for PSID ${customerPsid} for 2 hours.`);
+              }
               continue;
             }
 
             const senderPsid = webhookEvent.sender?.id;
+
+            // Check if AI is paused for this user
+            if (pausedUsers.has(senderPsid)) {
+              if (Date.now() - pausedUsers.get(senderPsid) < PAUSE_DURATION) {
+                console.log(`[FB Webhook] AI is paused for PSID ${senderPsid} due to owner takeover. Skipping.`);
+                continue; // Skip replying
+              } else {
+                pausedUsers.delete(senderPsid); // Expired pause
+              }
+            }
+
             const userQuery  = webhookEvent.message?.text || webhookEvent.postback?.payload;
 
             if (senderPsid && userQuery) {
               console.log(`[FB Webhook] From PSID (${senderPsid}): "${userQuery}"`);
-              const reply = await generateAutoReply(userQuery);
+              const reply = await generateAutoReply(userQuery, senderPsid);
               if (reply) await sendTextMessage(senderPsid, reply);
             }
           }
