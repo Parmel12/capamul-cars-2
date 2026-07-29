@@ -385,7 +385,7 @@ async function generateAutoReply(userMessage, senderPsid) {
   console.log(`[AI] msg="${userMessage}" | intent=${intent} | cars=${cars.length}`);
 
   // ── Try Gemini AI first ───────────────────────────────────────
-  if (apiKey && apiKey.startsWith('AIza')) {
+  if (apiKey) {
     let carsForGemini = cars;
     if (intent === 'general') {
       const matched = matchCarsByModel(userMessage, cars);
