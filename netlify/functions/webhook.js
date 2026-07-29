@@ -340,10 +340,7 @@ ${inventoryList}
 `;
 
     // Calculate dynamic greeting if intent is greeting
-    let aiStart = '';
-    if (intent === 'greeting' || intent === 'general') {
-       aiStart = getTimeGreeting('english', userName);
-    }
+    // Removed aiStart logic to prevent Gemini from getting stuck on the greeting
 
     const endpoints = [
       'v1beta/models/gemini-flash-latest',
@@ -360,7 +357,7 @@ ${inventoryList}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply (start with "${aiStart}" if it is the start of the conversation, otherwise reply naturally):` }] }],
+          contents: [{ parts: [{ text: `${systemPrompt}\n\nCustomer: "${userMessage}"\n\nCapamul Sales Consultant Reply:` }] }],
           generationConfig: { temperature: 0.5, maxOutputTokens: 600 }
         })
       });
