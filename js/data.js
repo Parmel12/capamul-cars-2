@@ -98,7 +98,21 @@ const api = {
       if (!this._carsPromise) {
         this._carsPromise = sb.get('cars', 'select=*&order=created_at.desc').then(data => {
           if (Array.isArray(data)) {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            try {
+              // Store a slim version (no image arrays) to stay within localStorage quota
+              const slim = data.map(c => ({
+                id: c.id, name: c.name, make: c.make, model: c.model, year: c.year,
+                price: c.price, dp: c.dp, original_price: c.original_price,
+                status: c.status, transmission: c.transmission, fuel_type: c.fuel_type,
+                mileage: c.mileage, body_type: c.body_type, created_at: c.created_at,
+                images: c.images ? [c.images[0]] : []  // only store 1st image URL, not all
+              }));
+              localStorage.setItem(CACHE_KEY, JSON.stringify(slim));
+            } catch (storageErr) {
+              // localStorage quota still exceeded — skip caching, still return live data
+              console.warn('getCars: localStorage quota exceeded, running without cache.');
+              localStorage.removeItem(CACHE_KEY);
+            }
           }
           return data;
         }).catch(err => {
