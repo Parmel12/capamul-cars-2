@@ -177,20 +177,36 @@ function matchCarsByModel(userMessage, cars) {
   return scored.filter(s => s.score >= 2).sort((a, b) => b.score - a.score).map(s => s.car);
 }
 
-function formatCarsFallback(matchedCars, userMessage, userName) {
-  let brandName = '';
-  if (matchedCars.length > 0) {
-    brandName = matchedCars[0].make || '';
+function formatCarsFallback(matchedCars, userMessage, userName, allCars = []) {
+  // 1. If matching available cars exist -> Display top 2 featured matching units
+  if (matchedCars && matchedCars.length > 0) {
+    const brandName = matchedCars[0].make || '';
+    const countHeader = brandName 
+      ? `We currently have ${matchedCars.length} available ${brandName} unit${matchedCars.length > 1 ? 's' : ''} in our CAPAMUL CARS 2.0 inventory! 🚗`
+      : `Here are our top available units from CAPAMUL CARS 2.0! 🚗`;
+
+    const topUnits = matchedCars.slice(0, 2);
+    const list = topUnits.map(c => 
+`🔥 ${c.name} 🔥
+💰 ${c.downPaymentFormatted} DOWNPAYMENT ONLY 💰
+💰 ${c.priceFormatted} ONLY IF CASH, NEGOTIABLE 💰
+OPEN FOR LOW DP (SUBJECT FOR APPROVAL)
+➡️ ${c.make || ''} ${c.model || ''}
+➡️ ${c.year || ''} YEAR MODEL
+➡️ ${c.transmission} TRANSMISSION
+➡️ ${c.mileage} ORIGINAL ODO
+➡️ STATUS: ${c.status}
+➡️ NO ISSUES`
+    ).join('\n\n');
+
+    return `${countHeader}\n\nHere are 2 of our top featured units:\n\n${list}\n\n🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nTo help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?`;
   }
 
-  const countHeader = brandName 
-    ? `We currently have ${matchedCars.length} available ${brandName} unit${matchedCars.length > 1 ? 's' : ''} in our CAPAMUL CARS 2.0 inventory! 🚗`
-    : `Here are our top available units from CAPAMUL CARS 2.0! 🚗`;
-
-  // Show max 2 featured units to keep message concise
-  const topUnits = matchedCars.slice(0, 2);
-
-  const list = topUnits.map(c => 
+  // 2. Out-of-Stock Handling (e.g., Vios, Civic, etc.)
+  const requestedQuery = (userMessage || 'vehicle').trim();
+  const alternatives = (allCars && allCars.length > 0) ? allCars.slice(0, 2) : [];
+  
+  const altList = alternatives.map(c => 
 `🔥 ${c.name} 🔥
 💰 ${c.downPaymentFormatted} DOWNPAYMENT ONLY 💰
 💰 ${c.priceFormatted} ONLY IF CASH, NEGOTIABLE 💰
@@ -203,7 +219,9 @@ OPEN FOR LOW DP (SUBJECT FOR APPROVAL)
 ➡️ NO ISSUES`
   ).join('\n\n');
 
-  return `${countHeader}\n\nHere are 2 of our top featured units:\n\n${list}\n\n🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nTo help us find your exact dream vehicle: What is your target budget, preferred body style (Sedan, SUV, Hatchback, Pickup), transmission, or color preference?`;
+  const altSection = altList ? `\n\nHere are 2 of our top alternative units available in stock right now:\n\n${altList}` : '';
+
+  return `Thank you for asking! As of the moment, the requested unit ("${requestedQuery}") is currently OUT OF STOCK in our showroom. 🚗\n\nOur inventory is updated daily! You can check all live available vehicles anytime on our website:\n🌐 ${WEBSITE} (or search Capamul Cars 2.0)${altSection}\n\n📍 Showroom: ${SHOWROOM}\n📞 Tawag/Text: ${CONTACT1} / ${CONTACT2}\n\nWould you like us to note down your details so our sales team can notify you as soon as a new unit arrives?`;
 }
 
 // ── Gemini AI Call ────────────────────────────────────────────────
@@ -376,8 +394,12 @@ GREETING & BRAND RESPONSE RULES:
 INVENTORY MATCHING RULES:
 1. The LIVE INVENTORY provided below contains all available and reserved vehicles.
 2. If a customer asks about a BRAND or MAKE (such as Mitsubishi, Toyota, Nissan, Suzuki, Honda, Hyundai), check if ANY car in the LIVE INVENTORY belongs to that make/brand. If there are vehicles matching that make, list the top 2 units and state the total count. NEVER say a brand/make is "out of stock" if there are cars of that make in the LIVE INVENTORY!
-3. If a customer asks for a specific model (such as Wigo, Xpander, Montero, Mirage, Vios, Fortuner), list the matching available units from the LIVE INVENTORY.
-4. Only say an item, brand, or model is out of stock if ZERO cars in the LIVE INVENTORY match that brand or model.
+3. If a customer asks for a specific model that IS available (such as Wigo, Xpander, Montero, Mirage, Fortuner), list the matching available units from the LIVE INVENTORY.
+4. OUT OF STOCK HANDLING: If a customer asks for a model or car that is NOT available in the LIVE INVENTORY (such as Vios, Civic, etc.):
+   - Politely inform them that the specific model is currently OUT OF STOCK in the showroom.
+   - ALWAYS promote the website: "🌐 Browse all available cars on our website: ${WEBSITE} (or search Capamul Cars 2.0)".
+   - Recommend 2 available alternative units from the LIVE INVENTORY using the exact CAR DETAILS FORMATTING emoji template.
+   - Ask if they would like to be notified as soon as a new unit arrives.
 
 CAR DETAILS FORMATTING
 When providing details or pricing for a specific car, ALWAYS use this exact high-energy marketing format and emojis. Use the actual data from the LIVE INVENTORY. Do NOT use asterisks (*):
@@ -477,14 +499,14 @@ async function generateAutoReply(userMessage, senderPsid) {
 
   // 1. If specific cars matched the user query (e.g. Mitsubishi, Wigo, Toyota, etc.), return them immediately!
   if (matched.length > 0) {
-    return formatCarsFallback(matched, userMessage, userName);
+    return formatCarsFallback(matched, userMessage, userName, cars);
   }
 
   if (intent === 'greeting') return greeting;
 
   if (intent === 'cheapest') {
     const sorted = [...cars].sort((a, b) => a.price - b.price);
-    if (sorted.length > 0) return formatCarsFallback(sorted, userName);
+    if (sorted.length > 0) return formatCarsFallback(sorted, userMessage, userName, cars);
   }
 
   if (intent === 'thanks') return `You're very welcome!\n\nThank you for choosing CAPAMUL CARS 2.0.\n\nIf you have any more questions about our vehicles, financing, or reservations, feel free to message us anytime.\n\nHave a wonderful day!`;
@@ -498,12 +520,12 @@ async function generateAutoReply(userMessage, senderPsid) {
   if (intent === 'price') return `I'd be happy to help.\n\nMay I know which vehicle you're referring to?\n\nOnce you tell me the vehicle model, I'll provide the available information including:\n• Price\n• Down payment\n• Financing option\n• Specifications`;
 
   if (intent === 'inventory' && cars.length > 0) {
-    return formatCarsFallback(cars, userName);
+    return formatCarsFallback(cars, userMessage, userName, cars);
   }
 
-  // DEFAULT FALLBACK (If no cars in DB or completely unknown)
+  // DEFAULT FALLBACK (If no cars matched or specific model is out of stock)
   if (cars.length > 0) {
-    return formatCarsFallback(cars, userName);
+    return formatCarsFallback([], userMessage, userName, cars);
   }
 
   return `That's a great question.\n\nI'd like to provide you with the most accurate information. Allow me to forward your inquiry to one of our sales representatives, who will get back to you as soon as possible.\n\nThank you for your patience.`;
