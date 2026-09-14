@@ -96,7 +96,27 @@ const api = {
       }
 
       if (!this._carsPromise) {
-        this._carsPromise = sb.get('cars', 'select=*&order=created_at.desc').then(data => {
+        const fetchCars = async () => {
+          try {
+            return await sb.get('cars', 'select=*&order=created_at.desc');
+          } catch (directErr) {
+            console.warn('getCars direct fetch failed, trying chunked fetch fallback:', directErr.message);
+            // Fallback: chunked fetch (limit 20 per request)
+            let all = [];
+            let offset = 0;
+            const limit = 20;
+            while (true) {
+              const chunk = await sb.get('cars', `select=*&order=created_at.desc&limit=${limit}&offset=${offset}`);
+              if (!chunk || !chunk.length) break;
+              all.push(...chunk);
+              if (chunk.length < limit) break;
+              offset += limit;
+            }
+            return all;
+          }
+        };
+
+        this._carsPromise = fetchCars().then(data => {
           if (Array.isArray(data)) {
             try {
               // Store a slim version (no image arrays) to stay within localStorage quota
@@ -105,11 +125,10 @@ const api = {
                 price: c.price, dp: c.dp, original_price: c.original_price,
                 status: c.status, transmission: c.transmission, fuel_type: c.fuel_type,
                 mileage: c.mileage, body_type: c.body_type, created_at: c.created_at,
-                images: c.images ? [c.images[0]] : []  // only store 1st image URL, not all
+                images: c.images ? [c.images[0]] : []
               }));
               localStorage.setItem(CACHE_KEY, JSON.stringify(slim));
             } catch (storageErr) {
-              // localStorage quota still exceeded — skip caching, still return live data
               console.warn('getCars: localStorage quota exceeded, running without cache.');
               localStorage.removeItem(CACHE_KEY);
             }

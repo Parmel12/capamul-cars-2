@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const supabaseConfigured = () =>
     !!(window.SUPABASE_URL && window.SUPABASE_ANON);
 
-  const compressImageToBlob = (file, maxDim = 2048, quality = 0.95) => {
+  const compressImageToBlob = (file, maxDim = 1200, quality = 0.8) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -386,14 +386,14 @@ document.addEventListener('DOMContentLoaded', () => {
           const img = new Image();
           img.src = evt.target.result;
           img.onload = () => {
-            const MAX = 1920; // High resolution limit requested by user
+            const MAX = 800; // Optimized dimension limit to prevent DB bloat
             let w = img.width, h = img.height;
             if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
             else       { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
             const canvas = document.createElement('canvas');
             canvas.width = w; canvas.height = h;
             canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/jpeg', 0.92)); // High quality
+            resolve(canvas.toDataURL('image/jpeg', 0.70)); // Optimized quality
           };
           img.onerror = () => reject(new Error('img load'));
         };

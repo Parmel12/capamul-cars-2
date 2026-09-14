@@ -40,8 +40,23 @@ export function formatPhp(amount) {
  */
 export async function getAvailableCars() {
   try {
-    const res = await axios.get(`${SUPABASE_URL}/rest/v1/cars?select=*&order=created_at.desc`, { headers });
-    const data = res.data || [];
+    let data = [];
+    try {
+      const res = await axios.get(`${SUPABASE_URL}/rest/v1/cars?select=*&order=created_at.desc`, { headers });
+      data = res.data || [];
+    } catch (directErr) {
+      console.warn('getAvailableCars direct fetch failed, trying chunked fallback:', directErr.message);
+      let offset = 0;
+      const limit = 20;
+      while (true) {
+        const res = await axios.get(`${SUPABASE_URL}/rest/v1/cars?select=*&order=created_at.desc&limit=${limit}&offset=${offset}`, { headers });
+        const chunk = res.data || [];
+        if (!chunk.length) break;
+        data.push(...chunk);
+        if (chunk.length < limit) break;
+        offset += limit;
+      }
+    }
 
     // Filter out sold cars
     const activeCars = data.filter(c => 
